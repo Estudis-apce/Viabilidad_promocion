@@ -27,6 +27,7 @@ def load_css_file(css_file_path):
     with open(css_file_path) as f:
         return st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 load_css_file(path + "main.css")
+
 st.subheader("**ESTUDIO DE VIABILIDAD DE UNA PROMOCIÓN**")
 left_col, right_col, margin_right = st.columns((0.15, 1, 0.15))
 with right_col:
