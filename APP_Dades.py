@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 import matplotlib.colors as colors
 from datetime import datetime
 import plotly.graph_objs as go
-import json
+from io import StringIO
 import io
 
 path = ""
@@ -33,25 +33,34 @@ left_col, right_col, margin_right = st.columns((0.15, 1, 0.15))
 with right_col:
     selected = option_menu(
         menu_title=None,  # required
-        options=["Análisis estático","Análisis dinámico","Ratios financieras", "Análisis de mercado", "Resumen de resultados"],  # Dropdown menu
+        options=["Edificabilidad","Análisis estático","Análisis dinámico", "Análisis de mercado", "Resumen de resultados"],  # Dropdown menu
         icons=[None, None, None, None],  # Icons for dropdown menu
         menu_icon="cast",  # optional
         default_index=0,  # optional
         orientation="horizontal",
         styles={
-            "container": {"padding": "0px important!", "background-color": "#fcefdc", "align":"center", "overflow":"hidden"},
-            "icon": {"color": "#bf6002", "font-size": "17px"},
+            "container": {"padding": "0px important!", "background-color": "#8a6f04", "align":"center", "overflow":"hidden"},
+            "icon": {"color": "white", "font-size": "17px"},
             "nav-link": {
                 "font-size": "17px",
                 "text-align": "center",
                 "font-weight": "bold",
-                "color":"#363534",
+                "color":"white",
                 "padding": "5px",
-                "--hover-color": "#fcefdc",
-                "background-color": "#fcefdc",
+                "--hover-color": "#8a6f04",
+                "background-color": "#8a6f04",
                 "overflow":"hidden"},
-            "nav-link-selected": {"background-color": "#de7207"}
+            "nav-link-selected": {"background-color": "#d1a804"}
             })
+if selected=="Edificabilidad":
+    left, right= st.columns((0.5,2))
+    with left:
+        uploaded_file = st.file_uploader("**Cargar archivo con los parametros de edificabilidad**", type="xlsx")
+    with right:
+        if uploaded_file is not None:
+            params_edif = pd.read_excel(uploaded_file)
+            st.markdown(params_edif.to_html(), unsafe_allow_html=True)
+
 if selected == "Análisis estático":
     left, right= st.columns((1,1))
     with left:
