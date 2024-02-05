@@ -12,7 +12,7 @@ from datetime import datetime
 import plotly.graph_objs as go
 from io import StringIO
 import io
-
+from streamlit_gsheets import GSheetsConnection
 path = ""
 
 st.set_page_config(
@@ -53,15 +53,50 @@ with right_col:
             "nav-link-selected": {"background-color": "#d1a804"}
             })
 if selected=="Edificabilidad":
-    left, right= st.columns((0.5,2))
-    with left:
-        uploaded_file = st.file_uploader("**Cargar archivo con los parametros de edificabilidad**", type="xlsx")
-    with right:
-        if uploaded_file is not None:
-            params_edif = pd.read_excel(uploaded_file)
-            st.markdown(params_edif.to_html(), unsafe_allow_html=True)
+#     left, right= st.columns((0.5,2))
+#     with left:
+#         uploaded_file = st.file_uploader("**Cargar archivo con los parametros de edificabilidad**", type="xlsx")
+#     with right:
+#         if uploaded_file is not None:
+#             params_edif = pd.read_excel(uploaded_file)
+#             st.markdown(params_edif.to_html(), unsafe_allow_html=True)
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    existing_data = conn.read(worksheet="Edificabilidad", usecols=list(range(3)), ttl=5)
+    existing_data = existing_data.dropna(how="all")
+    left, right = st.columns((1,1))
+    for index, row in existing_data.iterrows():
+        if index % 2 == 0:
+            with left:
+                input_value = st.number_input(f"**{row['Elemento']}:**", value=row['Superficie'])
+                exec(f"{row['Nombre']} = {input_value}")
+        else:
+            with right:
+                input_value = st.number_input(f"**{row['Elemento']}:**", value=row['Superficie'])
+                exec(f"{row['Nombre']} = {input_value}")
+    submit_button = st.button(label="Guardar proposta")
+    result_df = pd.DataFrame(columns=['Nombre', 'Superficie'])
+    if submit_button:
+        for variable_name in existing_data['Nombre']:
+            variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
+            result_df = result_df.append({'Nombre': variable_name, 'Superficie': variable_value}, ignore_index=True)
+        result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
+        conn.update(worksheet="Edificabilidad", data=result_df)
+        st.success("Propuesta guardada!")
+
 
 if selected == "Análisis estático":
+    left, center, right= st.columns((1,1,1))
+    with center:
+        selected_propuesta = st.radio("", ("Propuesta 1", "Propuesta 2", "Propuesta 3"), horizontal=True)
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    existing_data = conn.read(worksheet=selected_propuesta, usecols=list(range(3)), ttl=5)
+    existing_data = existing_data.dropna(how="all")
+
+    for index, row in existing_data.iterrows():
+        variable_name = row['Nombre']
+        variable_value = (row['Valor'])
+        exec(f"{variable_name} = {variable_value}")
+    
     left, right= st.columns((1,1))
     with left:
         st.markdown(
@@ -82,19 +117,19 @@ if selected == "Análisis estático":
         st.markdown('<h1 class="title-box">GASTOS</h1>', unsafe_allow_html=True)
         st.header("SOLAR")
         # st.write("Coste asociado al solar es", user_input)
-        input_solar1 = st.number_input("**COMPRA DEL SOLAR**", min_value=0, max_value=999999999, value=0, step=1000)
-        input_solar2 = st.number_input("**IMPUESTOS (AJD...)**", min_value=0, max_value=999999999, value=0, step=1000)
-        input_solar3 = st.number_input("**NOTARIA, REGISTRO, COMISIONES...**", min_value=0, max_value=999999999, value=0, step=1000)
+        input_solar1 = st.number_input("**COMPRA DEL SOLAR**", min_value=0.0, max_value=999999999.0, value=input_solar1, step=1000.0)
+        input_solar2 = st.number_input("**IMPUESTOS (AJD...)**", min_value=0.0, max_value=999999999.0, value=input_solar2, step=1000.0)
+        input_solar3 = st.number_input("**NOTARIA, REGISTRO, COMISIONES...**", min_value=0.0, max_value=999999999.0, value=input_solar3, step=1000.0)
         st.header("EDIFICACIÓN")
-        input_edificacion2 = st.number_input("**HONORARIOS PROFESIONALES**", min_value=0, max_value=999999999, value=0, step=1000)
-        input_edificacion3 = st.number_input("**IMPUESTOS Y TASAS MUNICIPALES**", min_value=0, max_value=999999999, value=0, step=1000)
-        input_edificacion4 = st.number_input("**ACOMETIDAS**", min_value=0, max_value=999999999, value=0, step=1000)
-        input_edificacion5 = st.number_input("**CONSTRUCCIÓN**", min_value=0, max_value=999999999, value=0, step=1000)
-        input_edificacion6 = st.number_input("**POSTVENTA**", min_value=0, max_value=999999999, value=0, step=1000)
+        input_edificacion2 = st.number_input("**HONORARIOS PROFESIONALES**", min_value=0.0, max_value=999999999.0, value=input_edificacion2, step=1000.0)
+        input_edificacion3 = st.number_input("**IMPUESTOS Y TASAS MUNICIPALES**", min_value=0.0, max_value=999999999.0, value=input_edificacion3, step=1000.0)
+        input_edificacion4 = st.number_input("**ACOMETIDAS**", min_value=0.0, max_value=999999999.0, value=input_edificacion4, step=1000.0)
+        input_edificacion5 = st.number_input("**CONSTRUCCIÓN**", min_value=0.0, max_value=999999999.0, value=input_edificacion5, step=1000.0)
+        input_edificacion6 = st.number_input("**POSTVENTA**", min_value=0.0, max_value=999999999.0, value=input_edificacion6, step=1000.0)
         st.header("COMERCIALIZACIÓN")
-        input_com1 = st.number_input("**COMISIONES (5% VENDA)**", min_value=0, max_value=999999999, value=0, step=1000)
+        input_com1 = st.number_input("**COMISIONES (5% VENDA)**", min_value=0.0, max_value=999999999.0, value=input_com1, step=1000.0)
         st.header("ADMINISTRACIÓN")
-        input_admin1 = st.number_input("**GASTOS DE ADMINISTRACIÓN**", min_value=0, max_value=999999999, value=0, step=1000)
+        input_admin1 = st.number_input("**GASTOS DE ADMINISTRACIÓN**", min_value=0.0, max_value=999999999.0, value=input_admin1, step=1000.0)
         total_gastos = input_solar1 + input_solar2 + input_solar3 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_edificacion6
         st.metric(label="**TOTAL GASTOS**", value=total_gastos)
     with right:
@@ -114,7 +149,7 @@ if selected == "Análisis estático":
         )
         st.markdown('<h1 class="title-box-ing">INGRESOS</h1>', unsafe_allow_html=True)
         st.header("VENTAS")
-        input_ventas1 = st.number_input("**INGRESOS POR VENTAS**", min_value=0, max_value=999999999, value=0, step=1000)
+        input_ventas1 = st.number_input("**INGRESOS POR VENTAS**", min_value=0.0, max_value=999999999.0, value=input_ventas1, step=1000.0)
         total_ingresos = input_ventas1 + 0
         st.metric(label="**TOTAL INGRESOS**", value=total_ingresos)
         st.markdown(
@@ -132,8 +167,8 @@ if selected == "Análisis estático":
             unsafe_allow_html=True
         )
         st.markdown('<h1 class="title-box-fin">FINANCIACIÓN</h1>', unsafe_allow_html=True)
-        input_fin1 = st.number_input("**INTERESES HIPOTECA**", min_value=0, max_value=999999999, value=0, step=1000)
-        input_fin2 = st.number_input("**GASTOS DE CONSTITUCIÓN**", min_value=0, max_value=999999999, value=0, step=1000)
+        input_fin1 = st.number_input("**INTERESES HIPOTECA**", min_value=0.0, max_value=999999999.0, value=input_fin1, step=1000.0)
+        input_fin2 = st.number_input("**GASTOS DE CONSTITUCIÓN**", min_value=0.0, max_value=999999999.0, value=input_fin2, step=1000.0)
         total_fin = input_fin1 + input_fin2
         st.metric(label="**TOTAL GASTOS DE FINANCIACIÓN**", value=total_fin)
         st.markdown(
@@ -154,6 +189,17 @@ if selected == "Análisis estático":
         st.metric(label="**BAII**", value=total_ingresos - total_gastos)
         st.markdown('<h1 class="title-box-res">RESULTADO ANTES DE IMPUESTOS (BAI)</h1>', unsafe_allow_html=True)
         st.metric(label="**BAI**", value=total_ingresos - total_gastos - total_fin)
+        
+        submit_button = st.button(label="Guardar proposta")
+        result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
+        if submit_button:
+            for variable_name in existing_data['Nombre']:
+                variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
+                result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
+            result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
+            conn.update(worksheet=selected_propuesta, data=result_df)
+            st.success("Propuesta guardada!")
+
 @st.cache_resource
 def import_data():
     maestro_mun = pd.read_excel("Maestro_MUN_COM_PROV.xlsx", sheet_name="Maestro")
