@@ -3,7 +3,7 @@
   max-width: 17vw;
 } */
 [data-testid= "stAppViewContainer"]{
-  background-color: white;
+  background-color: #edf1fc;
 }
 
 
@@ -90,7 +90,7 @@ table {
 
 table thead th {
   background-color: #ADD8E6;
-  color: #FFFFFF;
+  color: black;
   text-align: center;
 }
 
@@ -168,7 +168,7 @@ header {visibility: hidden;}
   padding: 10px;
   border-radius: 5px;
   margin: 10px 30px 10px 30px;
-  color: #7a3601;
+  color: black;
   font-weight: bold;
 }
 
@@ -201,7 +201,7 @@ div[data-testid="stMetric"] {
 }
 
 div[data-testid="stMetric"] {
-  color: #4682B4;
+  color: black;
   overflow-wrap: break-word;
   overflow: visible;
 }
@@ -209,12 +209,12 @@ div[data-testid="stMetric"] {
 div[data-testid="stMetric"] > label[data-testid="stMetricLabel"] > div {
   overflow-wrap: break-word;
   white-space: break-spaces;
-  color: #4682B4;
+  color: black;
   overflow: visible;
 }
 .download-button {
   background-color: #ADD8E6; /* Red background */
-  color: #fff; /* White text */
+  color: black; /* White text */
   border: none; /* No border */
   padding: 12px 24px; /* Padding around text */
   font-size: 16px; /* Text size */

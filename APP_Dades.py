@@ -41,7 +41,7 @@ selected = option_menu(
     default_index=0,  # optional
     orientation="horizontal",
     styles={
-        "container": {"padding": "0px important!", "background-color": "white", "align":"center", "overflow":"hidden"},
+        "container": {"padding": "0px important!", "background-color": "#edf1fc", "align":"center", "overflow":"hidden"},
         "icon": {"color": "#def3fa", "font-size": "17px"},
         "nav-link": {
             "font-size": "17px",
@@ -50,7 +50,7 @@ selected = option_menu(
             "color":"black",
             "padding": "5px",
             "--hover-color": "#ADD8E6",
-            "background-color": "white",
+            "background-color": "#edf1fc",
             "overflow":"hidden"},
         "nav-link-selected": {"background-color": "#ADD8E6"}
         })
@@ -63,7 +63,7 @@ if selected=="Edificabilidad":
 #             params_edif = pd.read_excel(uploaded_file)
 #             st.markdown(params_edif.to_html(), unsafe_allow_html=True)
     conn = st.connection("gsheets", type=GSheetsConnection)
-    existing_data = conn.read(worksheet="Edificabilidad", usecols=list(range(3)), ttl=5, encoding="ISO-8859-1")
+    existing_data = conn.read(worksheet="Edificabilidad", usecols=list(range(3)), ttl=5)
     existing_data = existing_data.dropna(how="all")
     left, right = st.columns((1,1))
     for index, row in existing_data.iterrows():
@@ -158,7 +158,7 @@ if selected == "Análisis estático":
                     title="Distribució dels costos de la promoció",
                     color_discrete_sequence=px.colors.qualitative.Set3
                 )
-                fig.update_layout(height=600, width=1750, paper_bgcolor = "#fcefdc", plot_bgcolor='#fcefdc')
+                fig.update_layout(height=600, width=1750, paper_bgcolor = "#edf1fc", plot_bgcolor='#edf1fc')
                 return fig
 
             st.plotly_chart(treemap())
@@ -312,7 +312,7 @@ def line_plotly(table_n, selection_n, title_main, title_y, title_x="Trimestre", 
     plot_cat = table_n[selection_n]
     if replace_0==True:
         plot_cat = plot_cat.replace(0, np.NaN)
-    colors = ['#2d538f', '#de7207', '#385723']
+    colors = ["#6495ED", "#7DF9FF",  "#87CEEB"]
     traces = []
     for i, col in enumerate(plot_cat.columns):
         trace = go.Scatter(
@@ -328,8 +328,8 @@ def line_plotly(table_n, selection_n, title_main, title_y, title_x="Trimestre", 
         xaxis=dict(title=title_x),
         yaxis=dict(title=title_y, tickformat=",d"),
         legend=dict(x=0, y=1.15, orientation="h"),
-        paper_bgcolor = "#fcefdc",
-        plot_bgcolor='#fcefdc'
+        paper_bgcolor = "#edf1fc",
+        plot_bgcolor='#edf1fc'
     )
     fig = go.Figure(data=traces, layout=layout)
     return fig
@@ -340,7 +340,7 @@ def bar_plotly(table_n, selection_n, title_main, title_y, year_ini, year_fin=dat
     table_n = table_n.reset_index()
     table_n["Any"] = table_n["Any"].astype(int)
     plot_cat = table_n[(table_n["Any"] >= year_ini) & (table_n["Any"] <= year_fin)][["Any"] + selection_n].set_index("Any")
-    colors = ['#2d538f', '#de7207', '#385723']
+    colors = ["#6495ED", "#7DF9FF",  "#87CEEB"]
     traces = []
     for i, col in enumerate(plot_cat.columns):
         trace = go.Bar(
@@ -355,8 +355,8 @@ def bar_plotly(table_n, selection_n, title_main, title_y, year_ini, year_fin=dat
         xaxis=dict(title="Any"),
         yaxis=dict(title=title_y, tickformat=",d"),
         legend=dict(x=0, y=1.15, orientation="h"),
-        paper_bgcolor = "#fcefdc",
-        plot_bgcolor='#fcefdc'
+        paper_bgcolor = "#edf1fc",
+        plot_bgcolor='#edf1fc'
     )
     fig = go.Figure(data=traces, layout=layout)
     return fig
@@ -366,7 +366,7 @@ def stacked_bar_plotly(table_n, selection_n, title_main, title_y, year_ini, year
     table_n = table_n.reset_index()
     table_n["Any"] = table_n["Any"].astype(int)
     plot_cat = table_n[(table_n["Any"] >= year_ini) & (table_n["Any"] <= year_fin)][["Any"] + selection_n].set_index("Any")
-    colors = ['#2d538f', '#de7207', '#385723']
+    colors = ["#6495ED", "#7DF9FF",  "#87CEEB"]
     
     traces = []
     for i, col in enumerate(plot_cat.columns):
@@ -384,8 +384,8 @@ def stacked_bar_plotly(table_n, selection_n, title_main, title_y, year_ini, year
         yaxis=dict(title=title_y, tickformat=",d"),
         legend=dict(x=0, y=1.15, orientation="h"),
         barmode='stack',
-        paper_bgcolor = "#fcefdc",
-        plot_bgcolor='#fcefdc'
+        paper_bgcolor = "#edf1fc",
+        plot_bgcolor='#edf1fc'
     )
     
     fig = go.Figure(data=traces, layout=layout)
@@ -402,8 +402,8 @@ def area_plotly(table_n, selection_n, title_main, title_y, trim):
     fig.update_layout(
         title=dict(text=title_main, font=dict(size=13), y=0.97),
         legend=dict(x=-0.15, y=1.25, orientation="h"),  # Adjust the x and y values for the legend position
-        paper_bgcolor = "#fcefdc",
-        plot_bgcolor='#fcefdc'
+        paper_bgcolor = "#edf1fc",
+        plot_bgcolor='#edf1fc'
     )
     return fig
 
@@ -605,14 +605,14 @@ def tipog_donut(df_hab, prov):
         hole=0.5, 
         showlegend=True, 
         marker=dict(
-            colors=["#008B6C", "#00D0A3",  "#66b9a7", "#DAE4E0"], 
+            colors=["#6495ED", "#7DF9FF",  "#87CEEB", "#A7C7E7"], 
             line=dict(color='#FFFFFF', width=1) 
         ),
         textposition='outside',
         textinfo='percent+label' 
     ))
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     fig.update_layout(
         title=f'Habitatges en oferta per tipologia',
         font=dict(size=12),
@@ -628,14 +628,14 @@ def num_dorms_prov(df_hab, prov):
     table33_prov = table33_prov[table33_prov["Província"]==prov].drop("Província", axis=1).T.reset_index()
     table33_prov.columns = ["Total dormitoris", "Habitatges en oferta"]
 
-    fig = go.Figure(go.Bar(x=table33_prov["Total dormitoris"], y=table33_prov["Habitatges en oferta"], marker_color='#66b9a7'))
+    fig = go.Figure(go.Bar(x=table33_prov["Total dormitoris"], y=table33_prov["Habitatges en oferta"], marker_color='#ADD8E6'))
     fig.layout.yaxis = dict(title="Habitages en oferta", tickformat=",d")
     fig.update_layout(
         title=f"Habitatges en oferta segons nombre d'habitacions",
         xaxis_title="Nombre d'habitacions",
     )
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     return(fig)
 @st.cache_resource
 def qualitats_prov(df_hab, prov):
@@ -648,15 +648,15 @@ def qualitats_prov(df_hab, prov):
         x=table62_hab["Total"],  # Use values as x-axis data
         y=table62_hab.index,  # Use categories as y-axis data
         orientation="h",  # Set orientation to horizontal
-        marker=dict(color="#66b9a7"),  # Set bar color
+        marker=dict(color="#ADD8E6"),  # Set bar color
     ))
     fig.update_layout(
         title="Qualitats d'habitatges en oferta",
         xaxis_title="% d'habitatges en oferta",
         yaxis_title="Qualitats",
     )
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     return(fig)
 @st.cache_resource
 def equipaments_prov(df_hab, prov):
@@ -669,15 +669,15 @@ def equipaments_prov(df_hab, prov):
         x=table67_hab["Total"],  # Use values as x-axis data
         y=table67_hab.index,  # Use categories as y-axis data
         orientation="h",  # Set orientation to horizontal
-        marker=dict(color="#66b9a7"),  # Set bar color
+        marker=dict(color="#ADD8E6"),  # Set bar color
     ))
     fig.update_layout(
         title="Equipaments d'habitatges en oferta",
         xaxis_title="% d'habitatges en oferta",
         yaxis_title="Equipaments",
     )
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     return(fig)
 @st.cache_resource
 def tipo_obra_prov(df_hab, prov):
@@ -693,14 +693,14 @@ def tipo_obra_prov(df_hab, prov):
         hole=0.5, 
         showlegend=True, 
         marker=dict(
-            colors=["#008B6C",  "#00D0A3"], 
+            colors=["#6495ED", "#7DF9FF"], 
             line=dict(color='#FFFFFF', width=1) 
         ),
         textposition='outside',
         textinfo='percent+label' 
     ))
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     fig.update_layout(
         title=f'Habitatges en oferta per tipus (obra nova o rehabilitació)',
         font=dict(size=12),
@@ -719,7 +719,7 @@ def cons_acabats(df_prom, df_hab, prov):
         hole=0.5, 
         showlegend=True, 
         marker=dict(
-            colors=["#008B6C",  "#00D0A3"], 
+            colors=["#6495ED", "#7DF9FF"], 
             line=dict(color='#FFFFFF', width=1) 
         ),
         textposition='outside',
@@ -733,8 +733,8 @@ def cons_acabats(df_prom, df_hab, prov):
             y=1.1
         )
     )
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     return(fig)
 @st.cache_resource
 def metric_estat(df_prom, df_hab, prov):
@@ -807,14 +807,14 @@ def data_text_mun(df_hab, df_hab_mod, selected_mun):
 def plotmun_streamlit(data, selected_mun, kpi):
     df = data[(data['Municipi']==selected_mun)]
     fig = px.histogram(df, x=kpi, title= "", labels={'x':kpi, 'y':'Freqüència'})
-    fig.data[0].marker.color = "#66b9a7"
+    fig.data[0].marker.color = "#ADD8E6"
     fig.layout.xaxis.title.text = kpi
     fig.layout.yaxis.title.text = 'Freqüència'
     mean_val = df[kpi].mean()
     fig.layout.shapes = [dict(type='line', x0=mean_val, y0=0, x1=mean_val, y1=1, yref='paper', xref='x', 
                             line=dict(color="black", width=2, dash='dot'))]
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     fig.layout.xaxis = dict(title=kpi, tickformat=",d")
     return(fig)
 @st.cache_resource
@@ -825,11 +825,11 @@ def count_plot_mun(data, selected_mun):
                 labels={'x':"Número d'habitatges", 'y':"TIPOG"}, text= df.values)
     fig.layout.xaxis = dict(title="Nombre d'habitatges", tickformat=",d")
     fig.layout.yaxis.title.text = "Tipologia"
-    fig.update_traces(marker=dict(color="#66b9a7"))
+    fig.update_traces(marker=dict(color="#ADD8E6"))
     max_width = 0.1
     fig.update_layout(bargap=(1 - max_width) / 2, bargroupgap=0)
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     return fig
 @st.cache_resource
 def dormscount_plot_mun(data, selected_mun):
@@ -839,13 +839,13 @@ def dormscount_plot_mun(data, selected_mun):
     fig = px.bar(df,  y=df.values, x=df.index,title="", labels={'x':"Número d'habitacions", 'y':"Número d'habitatges"}, text= df.values)
     fig.layout.yaxis = dict(title="Nombre d'habitatges", tickformat=",d")
     fig.layout.xaxis.title.text = "Nombre d'habitacions"
-    fig.update_traces(marker=dict(color="#66b9a7"))
+    fig.update_traces(marker=dict(color="#ADD8E6"))
     max_width = 0.1
     fig.update_layout(bargap=(1 - max_width) / 2, bargroupgap=0)
     for trace in fig.data:
         trace.text = [f"{val:,.0f}" if not np.isnan(val) else '' for val in trace.y]
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     return fig
 @st.cache_resource
 def lavcount_plot_mun(data, selected_mun):
@@ -855,13 +855,13 @@ def lavcount_plot_mun(data, selected_mun):
     fig = px.bar(df,  y=df.values, x=df.index,title="", labels={'x':"Número de lavabos", 'y':"Número d'habitatges"}, text= df.values)
     fig.layout.yaxis = dict(title="Nombre d'habitatges", tickformat=",d")
     fig.layout.xaxis.title.text = "Nombre de lavabos"
-    fig.update_traces(marker=dict(color="#66b9a7"))
+    fig.update_traces(marker=dict(color="#ADD8E6"))
     max_width = 0.00001
     fig.update_layout(bargap=(1 - max_width) / 2, bargroupgap=0)
     for trace in fig.data:
         trace.text = [f"{val:,.0f}" if not np.isnan(val) else '' for val in trace.y]
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     return fig
 @st.cache_resource
 def table_mun(Municipi, any_ini, any_fin):
@@ -884,7 +884,7 @@ def plot_mun_hist_units(selected_mun, variable_int, any_ini, any_fin):
     df_preus['Valor'] = np.where(df_preus['Valor']==0, np.NaN, round(df_preus['Valor'], 1))
     df_preus['Any'] = df_preus['Any'].astype(int)
     df_preus = df_preus[df_preus["Tipologia"]!="TOTAL HABITATGES"]
-    fig = px.bar(df_preus, x='Any', y='Valor', color='Tipologia', color_discrete_sequence=["#AAC4BA","#00D0A3"], range_y=[0, None], labels={'Valor': variable_int, 'Any': 'Any'}, text= "Valor")
+    fig = px.bar(df_preus, x='Any', y='Valor', color='Tipologia', color_discrete_sequence=["#6495ED", "#7DF9FF",  "#87CEEB"], range_y=[0, None], labels={'Valor': variable_int, 'Any': 'Any'}, text= "Valor")
     fig.layout.yaxis = dict(title= variable_int,tickformat=",d")
     valid_years = sorted(df_preus['Any'].unique())
     fig.update_xaxes(tickvals=valid_years)
@@ -893,23 +893,23 @@ def plot_mun_hist_units(selected_mun, variable_int, any_ini, any_fin):
     max_width = 0.2
     fig.update_layout(bargap=(1 - max_width) / 2, bargroupgap=0)
     fig.update_layout(font=dict(size=13), legend=dict(orientation='h', yanchor='bottom', y=1.05, xanchor='right', x=0.75))
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     return fig
 @st.cache_resource
 def plot_mun_hist(selected_mun, variable_int, any_ini, any_fin):
     df_preus = df_vf[(df_vf['Variable']==variable_int) & (df_vf['GEO']==selected_mun) & (df_vf["Any"]>=any_ini) & (df_vf["Any"]<=any_fin)].drop(['Variable'], axis=1).reset_index().drop('index', axis=1)
     df_preus['Valor'] = np.where(df_preus['Valor']==0, np.NaN, round(df_preus['Valor'], 1))
     df_preus['Any'] = df_preus['Any'].astype(int)
-    fig = px.bar(df_preus, x='Any', y='Valor', color='Tipologia', color_discrete_sequence=["#008B6C","#AAC4BA","#00D0A3"], range_y=[0, None], labels={'Valor': variable_int, 'Any': 'Any'}, text='Valor', barmode='group')
+    fig = px.bar(df_preus, x='Any', y='Valor', color='Tipologia', color_discrete_sequence=["#6495ED", "#7DF9FF",  "#87CEEB"], range_y=[0, None], labels={'Valor': variable_int, 'Any': 'Any'}, text='Valor', barmode='group')
     fig.layout.yaxis = dict(title= variable_int,tickformat=",d")
     for trace in fig.data:
         trace.text = [f"{val:,.0f}" if not np.isnan(val) else '' for val in trace.y]
     max_width = 0.5
     fig.update_layout(bargap=(1 - max_width) / 2, bargroupgap=0)
     fig.update_layout(font=dict(size=13), legend=dict(orientation='h', yanchor='bottom', y=1, xanchor='right', x=0.75))
-    fig.layout.paper_bgcolor = "#cce8e2"
-    fig.layout.plot_bgcolor = "#cce8e2"
+    fig.layout.paper_bgcolor = "#edf1fc"
+    fig.layout.plot_bgcolor = "#edf1fc"
     return fig
 
 ######################################### IMPORTAMOS BBDD 2023 #########################################
@@ -1278,7 +1278,7 @@ if selected=="Análisis de mercado APCE":
             selected_mun = st.selectbox('**Municipi seleccionat:**', mun_names, index= mun_names.index("Barcelona"))
         if selected_geo=="Províncies":
             prov_names = ["Barcelona", "Girona", "Tarragona", "Lleida"]
-            selected_prov = st.selectbox('', prov_names, index= prov_names.index("Barcelona"))
+            selected_prov = st.selectbox('**Província seleccionada:**', prov_names, index= prov_names.index("Barcelona"))
     if selected_geo=="Províncies":
         st.subheader(f"PROVÍNCIA DE {selected_prov.upper()}")
         if selected_prov=="Barcelona":
