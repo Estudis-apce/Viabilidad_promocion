@@ -171,6 +171,7 @@ if selected == "Análisis dinámico":
     with right:
         selected_propuesta = st.radio("", ("Propuesta 1", "Propuesta 2", "Propuesta 3"), horizontal=True)
     
+    
 
 ################################# ANALISI DE MERCADO DATOS PÚBLICOS (AHC) #########################################################
 
