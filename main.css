@@ -199,6 +199,11 @@ div[data-testid="stMetric"] {
   margin: 5px auto;
   overflow: visible;
 }
+[data-testid="textInputRootElement"] {
+  height: fit-content;
+  width: 90vw;
+}
+
 
 div[data-testid="stMetric"] {
   color: black;

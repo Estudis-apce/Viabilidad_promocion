@@ -87,91 +87,247 @@ if selected=="Edificabilidad":
 
 
 if selected == "Análisis estático":
-    left, center, right= st.columns((1,1,1))
-    with center:
-        selected_propuesta = st.radio("", ("Propuesta 1", "Propuesta 2", "Propuesta 3"), horizontal=True)
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    existing_data = conn.read(worksheet=selected_propuesta, usecols=list(range(3)), ttl=5)
-    existing_data = existing_data.dropna(how="all")
-
-    for index, row in existing_data.iterrows():
-        variable_name = row['Nombre']
-        variable_value = (row['Valor'])
-        exec(f"{variable_name} = {variable_value}")
-    
     left, right= st.columns((1,1))
     with left:
-        st.markdown('<h1 class="title-box">GASTOS</h1>', unsafe_allow_html=True)
-        st.header("SOLAR")
-        # st.write("Coste asociado al solar es", user_input)
-        input_solar1 = st.number_input("**COMPRA DEL SOLAR**", min_value=0.0, max_value=999999999.0, value=input_solar1, step=1000.0)
-        input_solar2 = st.number_input("**IMPUESTOS (AJD...)**", min_value=0.0, max_value=999999999.0, value=input_solar2, step=1000.0)
-        input_solar3 = st.number_input("**NOTARIA, REGISTRO, COMISIONES...**", min_value=0.0, max_value=999999999.0, value=input_solar3, step=1000.0)
-        st.header("EDIFICACIÓN")
-        input_edificacion2 = st.number_input("**HONORARIOS PROFESIONALES**", min_value=0.0, max_value=999999999.0, value=input_edificacion2, step=1000.0)
-        input_edificacion3 = st.number_input("**IMPUESTOS Y TASAS MUNICIPALES**", min_value=0.0, max_value=999999999.0, value=input_edificacion3, step=1000.0)
-        input_edificacion4 = st.number_input("**ACOMETIDAS**", min_value=0.0, max_value=999999999.0, value=input_edificacion4, step=1000.0)
-        input_edificacion5 = st.number_input("**CONSTRUCCIÓN**", min_value=0.0, max_value=999999999.0, value=input_edificacion5, step=1000.0)
-        input_edificacion6 = st.number_input("**POSTVENTA**", min_value=0.0, max_value=999999999.0, value=input_edificacion6, step=1000.0)
-        st.header("COMERCIALIZACIÓN")
-        input_com1 = st.number_input("**COMISIONES (5% VENDA)**", min_value=0.0, max_value=999999999.0, value=input_com1, step=1000.0)
-        st.header("ADMINISTRACIÓN")
-        input_admin1 = st.number_input("**GASTOS DE ADMINISTRACIÓN**", min_value=0.0, max_value=999999999.0, value=input_admin1, step=1000.0)
-        total_gastos = input_solar1 + input_solar2 + input_solar3 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_edificacion6
-        st.metric(label="**TOTAL GASTOS**", value=total_gastos)
+        selected_propuesta = st.radio("", ("Propuesta 1", "Propuesta 2", "Propuesta 3", "Comparativa"), horizontal=True)
     with right:
-        st.markdown('<h1 class="title-box-ing">INGRESOS</h1>', unsafe_allow_html=True)
-        st.header("VENTAS")
-        input_ventas1 = st.number_input("**INGRESOS POR VENTAS**", min_value=0.0, max_value=999999999.0, value=input_ventas1, step=1000.0)
-        total_ingresos = input_ventas1 + 0
-        st.metric(label="**TOTAL INGRESOS**", value=total_ingresos)
-        st.markdown('<h1 class="title-box-fin">FINANCIACIÓN</h1>', unsafe_allow_html=True)
-        input_fin1 = st.number_input("**INTERESES HIPOTECA**", min_value=0.0, max_value=999999999.0, value=input_fin1, step=1000.0)
-        input_fin2 = st.number_input("**GASTOS DE CONSTITUCIÓN**", min_value=0.0, max_value=999999999.0, value=input_fin2, step=1000.0)
-        total_fin = input_fin1 + input_fin2
-        st.metric(label="**TOTAL GASTOS DE FINANCIACIÓN**", value=total_fin)
-        st.markdown('<h1 class="title-box-res">RESULTADO ANTES DE IMPUESTOS E INTERESES (BAII)</h1>', unsafe_allow_html=True)
-        st.metric(label="**BAII**", value=total_ingresos - total_gastos)
-        st.markdown('<h1 class="title-box-res">RESULTADO ANTES DE IMPUESTOS (BAI)</h1>', unsafe_allow_html=True)
-        st.metric(label="**BAI**", value=total_ingresos - total_gastos - total_fin)
-        
-        submit_button = st.button(label="Guardar proposta")
-        result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
-        if submit_button:
-            for variable_name in existing_data['Nombre']:
-                variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
-                result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
-            result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
-            conn.update(worksheet=selected_propuesta, data=result_df)
-            st.success("¡Propuesta guardada!")
+        max_trim = st.slider("**Número de trimestres de la operación**", 8, 16, 10)
+    if selected_propuesta!="Comparativa":
         conn = st.connection("gsheets", type=GSheetsConnection)
         existing_data = conn.read(worksheet=selected_propuesta, usecols=list(range(3)), ttl=5)
         existing_data = existing_data.dropna(how="all")
-        with left:
-            def treemap():
-                # Create the treemap
-                fig = px.treemap(
-                    existing_data[["Parametro", "Valor"]][existing_data["Parametro"]!="INGRESOS POR VENTAS"],
-                    names='Parametro',
-                    values='Valor',
-                    parents=[''] * len(existing_data[["Parametro", "Valor"]][existing_data["Parametro"]!="INGRESOS POR VENTAS"]),
-                    title="Distribució dels costos de la promoció",
-                    color_discrete_sequence=px.colors.qualitative.Set3
-                )
-                fig.update_layout(height=600, width=1750, paper_bgcolor = "#edf1fc", plot_bgcolor='#edf1fc')
-                return fig
 
-            st.plotly_chart(treemap())
+        for index, row in existing_data.iterrows():
+            variable_name = row['Nombre']
+            variable_value = (row['Valor'])
+            exec(f"{variable_name} = {variable_value}")
+        left, center, right= st.columns((1,1,1))
+        with left:
+            input_recursospropios = st.number_input("Recursos propios", min_value=0.0, max_value=999999999.0, value=input_recursospropios, step=1000.0)
+            input_creditoconcedido = st.number_input("Crédito concedido",  min_value=0.0, max_value=999999999.0, value=input_creditoconcedido, step=1000.0)
+            input_gastosconstitucion = st.number_input("Gastos de constitución",  min_value=0.0, max_value=999999999.0, value=input_gastosconstitucion, step=1000.0)
+        with center:
+            input_tipodeinteres = st.number_input("Tipo de interés",  min_value=0.0, max_value=999999999.0, value=input_tipodeinteres, step=1000.0)
+            input_comisiondeapertura = st.number_input("Comisión de apertura",  min_value=0.0, max_value=999999999.0, value=input_comisiondeapertura, step=1000.0)
+            input_comisiondecancelacion = st.number_input("Comisión de cancelación",  min_value=0.0, max_value=999999999.0, value=input_comisiondecancelacion, step=1000.0)
+        with right:
+            input_superficieconstruida = st.number_input("Superficie construida",  min_value=0.0, max_value=999999999.0, value=input_superficieconstruida, step=1000.0)
+            input_costem2construido = st.number_input("Coste promedio del m2 construido",  min_value=0.0, max_value=999999999.0, value=input_costem2construido, step=1000.0)
+            input_proporcioncompraplano = st.number_input("Proporción de compra sobre plano",  min_value=0.0, max_value=999999999.0, value=input_proporcioncompraplano, step=1000.0)
+        
+        left, right= st.columns((1,1))
+        with left:
+            st.markdown('<h1 class="title-box">GASTOS</h1>', unsafe_allow_html=True)
+            st.header("SOLAR")
+            # st.write("Coste asociado al solar es", user_input)
+            input_solar1 = st.number_input("**COMPRA DEL SOLAR**", min_value=0.0, max_value=999999999.0, value=input_solar1, step=1000.0)
+            input_solar2 = st.number_input("**IMPUESTOS (AJD...)**", min_value=0.0, max_value=999999999.0, value=input_solar2, step=1000.0)
+            input_solar3 = st.number_input("**NOTARIA, REGISTRO, COMISIONES...**", min_value=0.0, max_value=999999999.0, value=input_solar3, step=1000.0)
+            st.header("EDIFICACIÓN")
+            input_edificacion2 = st.number_input("**HONORARIOS PROFESIONALES**", min_value=0.0, max_value=999999999.0, value=input_edificacion2, step=1000.0)
+            input_edificacion3 = st.number_input("**IMPUESTOS Y TASAS MUNICIPALES**", min_value=0.0, max_value=999999999.0, value=input_edificacion3, step=1000.0)
+            input_edificacion4 = st.number_input("**ACOMETIDAS**", min_value=0.0, max_value=999999999.0, value=input_edificacion4, step=1000.0)
+            input_edificacion5 = st.number_input("**CONSTRUCCIÓN**", min_value=0.0, max_value=999999999.0, value=input_edificacion5, step=1000.0)
+            input_edificacion6 = st.number_input("**POSTVENTA**", min_value=0.0, max_value=999999999.0, value=input_edificacion6, step=1000.0)
+            st.header("COMERCIALIZACIÓN")
+            input_com1 = st.number_input("**COMISIONES (5% VENDA)**", min_value=0.0, max_value=999999999.0, value=input_com1, step=1000.0)
+            st.header("ADMINISTRACIÓN")
+            input_admin1 = st.number_input("**GASTOS DE ADMINISTRACIÓN**", min_value=0.0, max_value=999999999.0, value=input_admin1, step=1000.0)
+            total_gastos = input_solar1 + input_solar2 + input_solar3 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_edificacion6
+            st.metric(label="**TOTAL GASTOS**", value=total_gastos)
+        with right:
+            st.markdown('<h1 class="title-box-ing">INGRESOS</h1>', unsafe_allow_html=True)
+            st.header("VENTAS")
+            input_ventas1 = st.number_input("**INGRESOS POR VENTAS**", min_value=0.0, max_value=999999999.0, value=input_ventas1, step=1000.0)
+            total_ingresos = input_ventas1 + 0
+            st.metric(label="**TOTAL INGRESOS**", value=total_ingresos)
+            st.markdown('<h1 class="title-box-fin">FINANCIACIÓN</h1>', unsafe_allow_html=True)
+            input_fin1 = st.number_input("**INTERESES HIPOTECA**", min_value=0.0, max_value=999999999.0, value=input_fin1, step=1000.0)
+            input_fin2 = st.number_input("**GASTOS DE CONSTITUCIÓN**", min_value=0.0, max_value=999999999.0, value=input_fin2, step=1000.0)
+            total_fin = input_fin1 + input_fin2
+            st.metric(label="**TOTAL GASTOS DE FINANCIACIÓN**", value=total_fin)
+            st.markdown('<h1 class="title-box-res">RESULTADO ANTES DE IMPUESTOS E INTERESES (BAII)</h1>', unsafe_allow_html=True)
+            st.metric(label="**BAII**", value=total_ingresos - total_gastos)
+            st.markdown('<h1 class="title-box-res">RESULTADO ANTES DE IMPUESTOS (BAI)</h1>', unsafe_allow_html=True)
+            st.metric(label="**BAI**", value=total_ingresos - total_gastos - total_fin)
+            
+            submit_button = st.button(label="Guardar proposta")
+            result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
+            if submit_button:
+                for variable_name in existing_data['Nombre']:
+                    variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
+                    result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
+                result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
+                conn.update(worksheet=selected_propuesta, data=result_df)
+                st.success("¡Propuesta guardada!")
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            existing_data = conn.read(worksheet=selected_propuesta, usecols=list(range(3)), ttl=5)
+            existing_data = existing_data.dropna(how="all")
+            with left:
+                def treemap():
+                    data = existing_data[["Parametro", "Valor"]][existing_data["Parametro"]!="INGRESOS POR VENTAS"].iloc[9:,:]
+                    
+                    # Calculate proportions
+                    total_value = data['Valor'].sum()
+                    data['Proportion'] = data['Valor'] / total_value * 100
+                    
+                    # Format proportion as percentage
+                    data['Proportion'] = data['Proportion'].round(2).astype(str) + '%'
+
+                    # Create the treemap
+                    fig = px.treemap(
+                        data,
+                        names='Parametro',
+                        values='Valor',
+                        parents=[''] * len(data),
+                        title="Distribució dels costos de la promoció",
+                        color_discrete_sequence=px.colors.qualitative.Set3,
+                        hover_data={'Proportion': True}  # Display proportion as hover data
+                    )
+                    fig.update_layout(height=600, width=1500, paper_bgcolor="#edf1fc", plot_bgcolor='#edf1fc')
+                    return fig
+                def sorted_barplot_with_proportions():
+                    data = existing_data[["Parametro", "Valor"]][existing_data["Parametro"] != "INGRESOS POR VENTAS"].iloc[9:,:]
+                    
+                    # Calculate proportions
+                    total_value = data['Valor'].sum()
+                    data['Proportion'] = data['Valor'] / total_value * 100
+                    
+                    # Format proportion as percentage
+                    data['Proportion'] = data['Proportion'].round(2).astype(str) + '%'
+
+                    # Sort values by proportion
+                    data = data.sort_values(by='Proportion', ascending=False)
+
+                    # Create the bar plot
+                    fig = px.bar(
+                        data.sort_values(by='Proportion', ascending=False),
+                        x='Parametro',
+                        y='Valor',
+                        title="Distribució dels costos de la promoció",
+                        color='Parametro',
+                        hover_data={'Proportion': True},  # Display proportion as hover data
+                        color_discrete_sequence=px.colors.qualitative.Set3
+                    )
+
+                    # Add annotations for labels
+                    for i, row in data.iterrows():
+                        fig.add_annotation(
+                            x=row['Parametro'], y=row['Valor'],
+                            text=row['Proportion'],
+                            showarrow=False
+                        )
+
+                    fig.update_layout(height=600, width=1500, paper_bgcolor="#edf1fc", plot_bgcolor='#edf1fc')
+                    return fig
+
+                st.plotly_chart(sorted_barplot_with_proportions())
+                st.plotly_chart(treemap())
+        left, right = st.columns((1,1))
+        with left:
+            calcul_roe = round(((total_ingresos - total_gastos - total_fin)/input_recursospropios)*100, 1)
+            calcul_roi = round(((total_ingresos - total_gastos)/total_gastos)*100, 1)
+            renta_anual = round((((1+(calcul_roe/100))**(1/(10/4)))-1)*100,1)
+            def barplot_ratios():
+                x_values = ['ROE', 'ROI', "Rentabilidad anualizada"]
+                y_values = [calcul_roe, calcul_roi, renta_anual]
+                labels = [f'{value:.1f}%' for value in y_values]  # Format values as percentage with two decimal places
+                fig = go.Figure(data=[go.Bar(x=x_values, y=y_values, text=labels, textposition='auto', width=0.5)])  # Adjust width as needed
+                fig.update_layout(title='RATIOS FINANCIERAS',
+                                xaxis_title='Métrica',
+                                yaxis_title='Porcentaje')
+                return fig
+            st.plotly_chart(barplot_ratios())
+        with right:
+            st.write("Result")
+    if selected_propuesta=="Comparativa":
+        left, center, right = st.columns((1,1,1))
+        with left:
+            st.write("left")
+        with center:
+            st.write("center")
+        with right:
+            st.write("right")
+
 if selected == "Análisis dinámico":
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    existing_data = conn.read(worksheet="Propuesta1_din", usecols=list(range(12)), ttl=5)
+    existing_data = existing_data.dropna(how="all")
+    def date_to_quarter(date_str):
+        date = datetime.strptime(str(date_str), '%Y-%m-%d')
+        quarter = (date.month - 1) // 3 + 1
+        year_quarter = f'{date.year}T{quarter}'
+        return year_quarter
+    def add_quarters(start_date, num_quarters):
+        current_quarter = date_to_quarter(start_date)
+        year, quarter = current_quarter.split('T')
+
+        # Calculate new year and quarter after adding num_quarters
+        new_year = int(year) + (int(quarter) + num_quarters - 1) // 4
+        new_quarter = (int(quarter) + num_quarters - 1) % 4 + 1
+
+        return f"{new_year}T{new_quarter}"
     left_c, left, center, right, right_c = st.columns((1,1,1,1,1))
     with left:
         start_date =st.date_input("Fecha de inicio de la operación", value="today")
     with center:
-        max_trim = st.slider("**Número de trimestres de la operación**", 8, 24, 8)
+        max_trim = st.slider("**Número de trimestres de la operación**", 8, 16, 10)
     with right:
         selected_propuesta = st.radio("", ("Propuesta 1", "Propuesta 2", "Propuesta 3"), horizontal=True)
     
-    
+    start_quarter = date_to_quarter(start_date)
+    st.write(f"Trimestre de inicio: {start_quarter}")
+    quarters = []
+    for i in range(max_trim):
+        quarters.append(add_quarters(start_date, i))
+    quarters.append("TOTAL")
+    n_columns = st.columns(len(quarters)+1)
+    n_elements = existing_data["Tesorería"].tolist()
+    analisis_din = pd.DataFrame(index=n_elements)
+    for i, input_col in enumerate(n_columns):
+        column_data = []
+        with input_col:
+            if i == 0:
+                for j, element in enumerate(n_elements):
+                    value= st.text_input("", element, key=j*1000)
+                    column_data.append(value)
+            else:
+                for j in range(len(n_elements)+1):
+                    if j == 0:
+                        value = st.write(quarters[i - 1])
+                    else:
+                        value = st.number_input("", value=0, key=int(str(i) + str(j) + str(j+1)))
+                        column_data.append(value)
+            analisis_din[str(quarters[i-1])] = column_data
+    analisis_din = analisis_din.reset_index().rename(columns= {"index":"Tesorería"})
+    analisis_din["Total"] = analisis_din["TOTAL"] 
+    analisis_din.drop("TOTAL", axis=1, inplace=True)
+    submit_button = st.button(label="Guardar proposta")
+    if submit_button:
+        conn.update(worksheet="Propuesta_din1", data=analisis_din)
+        st.success("¡Propuesta guardada!")
+    st.table(analisis_din)
+    # calcul_roe = 
+
+    # input_data = []
+    # for i, input_col in enumerate(n_columns):
+    #     column_data = []
+    #     with input_col:
+    #         if i == 0:
+    #             for w, element in enumerate(n_elements):
+    #                 value = st.text_input("", element, key=w*1000)
+    #                 column_data.append(value)
+    #         else:
+    #             for j in range(len(n_elements)+1):
+    #                 if j == 0:
+    #                     value = quarters[i - 1]
+    #                 else:
+    #                     value = st.number_input("", value=0, key=int(str(i) + str(j) + str(j+1)))
+    #                 column_data.append(value)
+    #     input_data.append(column_data)
+
+    # # Create DataFrame from input_data
+    # df = pd.DataFrame(input_data, columns=["Trimestre"] + n_elements)
 
 ################################# ANALISI DE MERCADO DATOS PÚBLICOS (AHC) #########################################################
 
