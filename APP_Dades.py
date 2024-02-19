@@ -387,11 +387,8 @@ if selected == "Análisis dinámico":
     def add_quarters(start_date, num_quarters):
         current_quarter = date_to_quarter(start_date)
         year, quarter = current_quarter.split('T')
-
-        # Calculate new year and quarter after adding num_quarters
         new_year = int(year) + (int(quarter) + num_quarters - 1) // 4
         new_quarter = (int(quarter) + num_quarters - 1) % 4 + 1
-
         return f"{new_year}T{new_quarter}"
     left_c, left, center, right, right_c = st.columns((1,1,1,1,1))
     with left:
@@ -425,7 +422,7 @@ if selected == "Análisis dinámico":
                     if j == 0:
                         value = st.write(quarters[i - 1])
                     else:
-                        value = st.number_input("", value=0, key=int(str(i) + str(j) + str(j+1)))
+                        value = st.number_input("", value=existing_data.iloc[j-1,i], key=int(str(i) + str(j) + str(j+1)))
                         column_data.append(value)
             analisis_din[str(quarters[i-1])] = column_data
     analisis_din = analisis_din.reset_index().rename(columns= {"index":"Tesorería"})
@@ -436,8 +433,6 @@ if selected == "Análisis dinámico":
         conn.update(worksheet="Propuesta_din"+ selected_propuesta[-1], data=analisis_din)
         st.success("¡Propuesta guardada!")
     st.table(analisis_din)
-    # calcul_roe = 
-
 ################################# ANALISI DE MERCADO DATOS PÚBLICOS (AHC) #########################################################
 
 @st.cache_resource
