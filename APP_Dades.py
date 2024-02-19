@@ -35,7 +35,7 @@ st.subheader("**ESTUDIO DE VIABILIDAD DE UNA PROMOCIÓN**")
 
 selected = option_menu(
     menu_title=None,  # required
-    options=["Edificabilidad","Análisis estático","Análisis dinámico", "Análisis de mercado", "Análisis de mercado APCE", "Resumen de resultados"],  # Dropdown menu
+    options=["Análisis de mercado", "Edificabilidad","Análisis estático","Análisis dinámico", "Resumen de resultados"],  # Dropdown menu
     icons=[None, None, None, None],  # Icons for dropdown menu
     menu_icon="cast",  # optional
     default_index=0,  # optional
@@ -62,29 +62,88 @@ if selected=="Edificabilidad":
 #         if uploaded_file is not None:
 #             params_edif = pd.read_excel(uploaded_file)
 #             st.markdown(params_edif.to_html(), unsafe_allow_html=True)
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    existing_data = conn.read(worksheet="Edificabilidad", usecols=list(range(3)), ttl=5)
-    existing_data = existing_data.dropna(how="all")
-    left, right = st.columns((1,1))
-    for index, row in existing_data.iterrows():
-        if index % 2 == 0:
-            with left:
-                input_value = st.number_input(f"**{row['Elemento']}:**", value=row['Superficie'])
-                exec(f"{row['Nombre']} = {input_value}")
-        else:
-            with right:
-                input_value = st.number_input(f"**{row['Elemento']}:**", value=row['Superficie'])
-                exec(f"{row['Nombre']} = {input_value}")
-    submit_button = st.button(label="Guardar proposta")
-    result_df = pd.DataFrame(columns=['Nombre', 'Superficie'])
-    if submit_button:
-        for variable_name in existing_data['Nombre']:
-            variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
-            result_df = result_df.append({'Nombre': variable_name, 'Superficie': variable_value}, ignore_index=True)
-        result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
-        conn.update(worksheet="Edificabilidad", data=result_df)
-        st.success("¡Propuesta guardada!")
-
+    left, center, right= st.columns((1,1,1))
+    with center:
+        selected_propuesta = st.radio("", ("Propuesta 1", "Propuesta 2", "Propuesta 3", "Comparativa"), horizontal=True)
+    if (selected_propuesta=="Propuesta 1") or (selected_propuesta=="Propuesta 2") or (selected_propuesta=="Propuesta 3"):
+        conn = st.connection("gsheets", type=GSheetsConnection)
+        existing_data = conn.read(worksheet="Edificabilidad" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
+        existing_data = existing_data.dropna(how="all")
+        left, right = st.columns((1,1))
+        for index, row in existing_data.iterrows():
+            if index % 2 == 0:
+                with left:
+                    input_value = st.number_input(f"**{row['Elemento']}:**", value=row['Valor'])
+                    exec(f"{row['Nombre']} = {input_value}")
+            else:
+                with right:
+                    input_value = st.number_input(f"**{row['Elemento']}:**", value=row['Valor'])
+                    exec(f"{row['Nombre']} = {input_value}")
+        submit_button = st.button(label="Guardar proposta")
+        result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
+        if submit_button:
+            for variable_name in existing_data['Nombre']:
+                variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
+                result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
+            result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
+            conn.update(worksheet="Edificabilidad", data=result_df)
+            st.success("¡Propuesta guardada!")
+    if selected_propuesta=="Comparativa":
+        num_propuesta_edifi = ["Edificabilidad1", "Edificabilidad2", "Edificabilidad3"]
+        propuesta_edifi_df = []
+        for i in num_propuesta_edifi:
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            existing_data = conn.read(worksheet=i, usecols=list(range(3)), ttl=5)
+            existing_data = existing_data.dropna(how="all")
+            propuesta_edifi_df.append(existing_data)
+        def bar_plotly(df, title_main, title_y):
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                x=df["Elemento"],
+                y=df["Valor"],
+                name="m2",
+                text=df["Valor"],  # Use the "Valor" column for labels
+                textposition='auto'  # Position the labels automatically
+            ))
+            fig.update_layout(
+                title=title_main,
+                xaxis=dict(title=""),
+                yaxis=dict(title=title_y, tickformat=",d"),
+                paper_bgcolor="#edf1fc",
+                plot_bgcolor='#edf1fc'
+            )
+            return fig
+        left, center, right= st.columns((1,1,1))
+        with left:
+            propuesta1_edifi = propuesta_edifi_df[0]
+            st.markdown(f'<div class="custom-box">PROPUESTA 1</div>', unsafe_allow_html=True)   
+            st.metric(label="**Número de viviendas**", value=int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="num_viviendas"]["Valor"]))
+            st.metric(label="**Superficie de viviendas**", value=int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="super_viviendas"]["Valor"]))
+            st.metric(label="**Coste de construcción sobre rasante**", value=int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="coste_sobrerasante"]["Valor"]))
+            st.metric(label="**Coste de construcción bajo rasante**", value=int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="coste_bajorasante"]["Valor"]))
+            super_df = propuesta1_edifi[(propuesta1_edifi['Nombre'].str.startswith('super')) & (propuesta1_edifi['Nombre']!="super_viviendas")].drop("Nombre", axis=1)
+            super_df["Valor"] = round(super_df["Valor"],1)
+            st.plotly_chart(bar_plotly(super_df, "Distribución de superficie en m2", "Superficie en m2"), use_container_width=True, responsive=True)
+        with center:
+            propuesta2_edifi = propuesta_edifi_df[1]
+            st.markdown(f'<div class="custom-box">PROPUESTA 2</div>', unsafe_allow_html=True)   
+            st.metric(label="**Número de viviendas**", value=int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="num_viviendas"]["Valor"]))
+            st.metric(label="**Superficie de viviendas**", value=int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="super_viviendas"]["Valor"]))
+            st.metric(label="**Coste de construcción sobre rasante**", value=int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="coste_sobrerasante"]["Valor"]))
+            st.metric(label="**Coste de construcción bajo rasante**", value=int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="coste_bajorasante"]["Valor"]))
+            super_df = propuesta2_edifi[(propuesta2_edifi['Nombre'].str.startswith('super')) & (propuesta2_edifi['Nombre']!="super_viviendas")].drop("Nombre", axis=1)
+            super_df["Valor"] = round(super_df["Valor"],1)
+            st.plotly_chart(bar_plotly(super_df, "Distribución de superficie en m2", "Superficie en m2"), use_container_width=True, responsive=True)
+        with right:
+            propuesta3_edifi = propuesta_edifi_df[2]
+            st.markdown(f'<div class="custom-box">PROPUESTA 3</div>', unsafe_allow_html=True)   
+            st.metric(label="**Número de viviendas**", value=int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="num_viviendas"]["Valor"]))
+            st.metric(label="**Superficie de viviendas**", value=int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="super_viviendas"]["Valor"]))
+            st.metric(label="**Coste de construcción sobre rasante**", value=int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="coste_sobrerasante"]["Valor"]))
+            st.metric(label="**Coste de construcción bajo rasante**", value=int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="coste_bajorasante"]["Valor"]))
+            super_df = propuesta3_edifi[(propuesta3_edifi['Nombre'].str.startswith('super')) & (propuesta3_edifi['Nombre']!="super_viviendas")].drop("Nombre", axis=1)
+            super_df["Valor"] = round(super_df["Valor"],1)
+            st.plotly_chart(bar_plotly(super_df, "Distribución de superficie en m2", "Superficie en m2"), use_container_width=True, responsive=True)
 
 if selected == "Análisis estático":
     left, right= st.columns((1,1))
@@ -94,7 +153,7 @@ if selected == "Análisis estático":
         max_trim = st.slider("**Número de trimestres de la operación**", 8, 16, 10)
     if selected_propuesta!="Comparativa":
         conn = st.connection("gsheets", type=GSheetsConnection)
-        existing_data = conn.read(worksheet=selected_propuesta, usecols=list(range(3)), ttl=5)
+        existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
         existing_data = existing_data.dropna(how="all")
 
         for index, row in existing_data.iterrows():
@@ -158,10 +217,10 @@ if selected == "Análisis estático":
                     variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
                     result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
                 result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
-                conn.update(worksheet=selected_propuesta, data=result_df)
+                conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
                 st.success("¡Propuesta guardada!")
             conn = st.connection("gsheets", type=GSheetsConnection)
-            existing_data = conn.read(worksheet=selected_propuesta, usecols=list(range(3)), ttl=5)
+            existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
             existing_data = existing_data.dropna(how="all")
             with left:
                 def treemap():
@@ -227,7 +286,7 @@ if selected == "Análisis estático":
         with left:
             calcul_roe = round(((total_ingresos - total_gastos - total_fin)/input_recursospropios)*100, 1)
             calcul_roi = round(((total_ingresos - total_gastos)/total_gastos)*100, 1)
-            renta_anual = round((((1+(calcul_roe/100))**(1/(10/4)))-1)*100,1)
+            renta_anual = round((((1+(calcul_roe/100))**(1/(max_trim/4)))-1)*100,1)
             def barplot_ratios():
                 x_values = ['ROE', 'ROI', "Rentabilidad anualizada"]
                 y_values = [calcul_roe, calcul_roi, renta_anual]
@@ -241,18 +300,85 @@ if selected == "Análisis estático":
         with right:
             st.write("Result")
     if selected_propuesta=="Comparativa":
-        left, center, right = st.columns((1,1,1))
+        num_propuesta_estatico = ["Propuesta_est1", "Propuesta_est2", "Propuesta_est3"]
+        propuesta_estatico_df = []
+        for i in num_propuesta_estatico:
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            existing_data = conn.read(worksheet=i, usecols=list(range(3)), ttl=5)
+            existing_data = existing_data.dropna(how="all")
+            propuesta_estatico_df.append(existing_data)
+        # def bar_plotly(df, title_main, title_y):
+        #     fig = go.Figure()
+        #     fig.add_trace(go.Bar(
+        #         x=df["Elemento"],
+        #         y=df["Valor"],
+        #         name="m2",
+        #         text=df["Valor"],  # Use the "Valor" column for labels
+        #         textposition='auto'  # Position the labels automatically
+        #     ))
+        #     fig.update_layout(
+        #         title=title_main,
+        #         xaxis=dict(title=""),
+        #         yaxis=dict(title=title_y, tickformat=",d"),
+        #         paper_bgcolor="#edf1fc",
+        #         plot_bgcolor='#edf1fc'
+        #     )
+        #     return fig
+        def calculate_metrics(df):
+            total_gastos = df[df["Nombre"].isin(["input_solar1", "input_solar2", "input_solar3", "input_edificacion2", "input_edificacion3", "input_edificacion4", "input_edificacion5", "input_edificacion6", "input_com1", "input_admin1"])]["Valor"].sum()
+            total_fin = df[df["Nombre"].isin(["input_fin1", "input_fin2"])]["Valor"].sum()
+            total_ingresos = df[df["Nombre"]=="input_ventas1"]["Valor"].sum()
+            BAII_propuesta = total_ingresos - total_gastos #BAII
+            BAI_propuesta = total_ingresos - total_gastos - total_fin #BAI
+            return([total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta])
+        def bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta):
+            values = [total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta]
+            labels = ['Total Gastos', 'Total Gastos de Financiación', 'Total Ingresos', 'BAII', 'BAI']
+            bar_labels = [f"{value}€" for value in values]
+            fig = go.Figure([go.Bar(x=labels, y=values, text=bar_labels, textposition='auto')])
+            fig.update_layout(title='Resultado financiero',
+                            xaxis_title='',
+                            yaxis_title='€')
+            
+            return fig
+
+        left, center, right= st.columns((1,1,1))
         with left:
-            st.write("left")
+            propuesta1_est = propuesta_estatico_df[0]
+            st.markdown(f'<div class="custom-box">PROPUESTA 1</div>', unsafe_allow_html=True)   
+            # st.plotly_chart(bar_plotly(super_df, "Distribución de superficie en m2", "Superficie en m2"))
+            total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta1_est)
+            st.metric(label="**Total ingresos**", value=int(total_ingresos))
+            st.metric(label="**Total gastos**", value=int(total_gastos))
+            st.metric(label="**Total gastos de financiación**", value=int(total_fin))
+            st.metric(label="**BAII**", value=int(BAII_propuesta))
+            st.metric(label="**BAI**", value=int(BAI_propuesta))
+            st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta), use_container_width=True, responsive=True)
+
         with center:
-            st.write("center")
+            propuesta2_est = propuesta_estatico_df[1]
+            st.markdown(f'<div class="custom-box">PROPUESTA 2</div>', unsafe_allow_html=True)   
+            total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta2_est)
+            st.metric(label="**Total ingresos**", value=int(total_ingresos))
+            st.metric(label="**Total gastos**", value=int(total_gastos))
+            st.metric(label="**Total gastos de financiación**", value=int(total_fin))
+            st.metric(label="**BAII**", value=int(BAII_propuesta))
+            st.metric(label="**BAI**", value=int(BAI_propuesta))
+            st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta), use_container_width=True, responsive=True)
+
         with right:
-            st.write("right")
+            propuesta3_est = propuesta_estatico_df[2]
+            st.markdown(f'<div class="custom-box">PROPUESTA 3</div>', unsafe_allow_html=True)   
+            total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta3_est)
+            st.metric(label="**Total ingresos**", value=int(total_ingresos))
+            st.metric(label="**Total gastos**", value=int(total_gastos))
+            st.metric(label="**Total gastos de financiación**", value=int(total_fin))
+            st.metric(label="**BAII**", value=int(BAII_propuesta))
+            st.metric(label="**BAI**", value=int(BAI_propuesta))
+            st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta), use_container_width=True, responsive=True)
+
 
 if selected == "Análisis dinámico":
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    existing_data = conn.read(worksheet="Propuesta1_din", usecols=list(range(12)), ttl=5)
-    existing_data = existing_data.dropna(how="all")
     def date_to_quarter(date_str):
         date = datetime.strptime(str(date_str), '%Y-%m-%d')
         quarter = (date.month - 1) // 3 + 1
@@ -274,7 +400,10 @@ if selected == "Análisis dinámico":
         max_trim = st.slider("**Número de trimestres de la operación**", 8, 16, 10)
     with right:
         selected_propuesta = st.radio("", ("Propuesta 1", "Propuesta 2", "Propuesta 3"), horizontal=True)
-    
+
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    existing_data = conn.read(worksheet="Propuesta_din"+ selected_propuesta[-1], usecols=list(range(12)), ttl=5)
+    existing_data = existing_data.dropna(how="all")
     start_quarter = date_to_quarter(start_date)
     st.write(f"Trimestre de inicio: {start_quarter}")
     quarters = []
@@ -304,41 +433,23 @@ if selected == "Análisis dinámico":
     analisis_din.drop("TOTAL", axis=1, inplace=True)
     submit_button = st.button(label="Guardar proposta")
     if submit_button:
-        conn.update(worksheet="Propuesta_din1", data=analisis_din)
+        conn.update(worksheet="Propuesta_din"+ selected_propuesta[-1], data=analisis_din)
         st.success("¡Propuesta guardada!")
     st.table(analisis_din)
     # calcul_roe = 
-
-    # input_data = []
-    # for i, input_col in enumerate(n_columns):
-    #     column_data = []
-    #     with input_col:
-    #         if i == 0:
-    #             for w, element in enumerate(n_elements):
-    #                 value = st.text_input("", element, key=w*1000)
-    #                 column_data.append(value)
-    #         else:
-    #             for j in range(len(n_elements)+1):
-    #                 if j == 0:
-    #                     value = quarters[i - 1]
-    #                 else:
-    #                     value = st.number_input("", value=0, key=int(str(i) + str(j) + str(j+1)))
-    #                 column_data.append(value)
-    #     input_data.append(column_data)
-
-    # # Create DataFrame from input_data
-    # df = pd.DataFrame(input_data, columns=["Trimestre"] + n_elements)
 
 ################################# ANALISI DE MERCADO DATOS PÚBLICOS (AHC) #########################################################
 
 @st.cache_resource
 def import_data():
     maestro_mun = pd.read_excel("Maestro_MUN_COM_PROV.xlsx", sheet_name="Maestro")
+    DT_terr_def = pd.read_excel("DT_simple.xlsx", sheet_name="terr_q")
+    DT_terr_y_def = pd.read_excel("DT_simple.xlsx", sheet_name="terr_y")
     DT_mun_def = pd.read_excel("DT_simple.xlsx", sheet_name="mun_q")
     DT_mun_y_def = pd.read_excel("DT_simple.xlsx", sheet_name="mun_y")
-    return([DT_mun_def, DT_mun_y_def, maestro_mun])
+    return([DT_terr_def, DT_terr_y_def, DT_mun_def, DT_mun_y_def, maestro_mun])
 
-DT_mun, DT_mun_y, maestro_mun = import_data()
+DT_terr, DT_terr_y, DT_mun, DT_mun_y, maestro_mun = import_data()
 
 ##@st.cache_data(show_spinner="**Carregant les dades... Esperi, siusplau**", max_entries=500)
 @st.cache_resource
@@ -469,7 +580,7 @@ def line_plotly(table_n, selection_n, title_main, title_y, title_x="Trimestre", 
     plot_cat = table_n[selection_n]
     if replace_0==True:
         plot_cat = plot_cat.replace(0, np.NaN)
-    colors = ["#6495ED", "#7DF9FF",  "#87CEEB"]
+    colors = ["#6495ED", "#7DF9FF",  "#87CEEB", "#A7C7E7"]
     traces = []
     for i, col in enumerate(plot_cat.columns):
         trace = go.Scatter(
@@ -497,7 +608,7 @@ def bar_plotly(table_n, selection_n, title_main, title_y, year_ini, year_fin=dat
     table_n = table_n.reset_index()
     table_n["Any"] = table_n["Any"].astype(int)
     plot_cat = table_n[(table_n["Any"] >= year_ini) & (table_n["Any"] <= year_fin)][["Any"] + selection_n].set_index("Any")
-    colors = ["#6495ED", "#7DF9FF",  "#87CEEB"]
+    colors = ["#6495ED", "#7DF9FF",  "#87CEEB", "#A7C7E7"]
     traces = []
     for i, col in enumerate(plot_cat.columns):
         trace = go.Bar(
@@ -523,7 +634,7 @@ def stacked_bar_plotly(table_n, selection_n, title_main, title_y, year_ini, year
     table_n = table_n.reset_index()
     table_n["Any"] = table_n["Any"].astype(int)
     plot_cat = table_n[(table_n["Any"] >= year_ini) & (table_n["Any"] <= year_fin)][["Any"] + selection_n].set_index("Any")
-    colors = ["#6495ED", "#7DF9FF",  "#87CEEB"]
+    colors = ['#2d538f', '#de7207', '#385723']
     
     traces = []
     for i, col in enumerate(plot_cat.columns):
@@ -559,8 +670,8 @@ def area_plotly(table_n, selection_n, title_main, title_y, trim):
     fig.update_layout(
         title=dict(text=title_main, font=dict(size=13), y=0.97),
         legend=dict(x=-0.15, y=1.25, orientation="h"),  # Adjust the x and y values for the legend position
-        paper_bgcolor = "#edf1fc",
-        plot_bgcolor='#edf1fc'
+        paper_bgcolor = "#fcefdc",
+        plot_bgcolor='#fcefdc'
     )
     return fig
 
@@ -621,7 +732,13 @@ def table_trim(data_ori, year_ini, rounded=False, formated=True):
     if rounded==True:
         numeric_columns = data_ori.select_dtypes(include=['float64', 'int64']).columns
         data_ori[numeric_columns] = data_ori[numeric_columns].applymap(lambda x: round(x, 1))
-    output_data = data_ori.set_index(["Any", "Trimestre"]).T.dropna(axis=1, how="all")
+    output_data = data_ori.set_index(["Any", "Trimestre"]).T#.dropna(axis=1, how="all")
+    last_column_contains_all_nans = output_data.iloc[:, -1].isna().all()
+    if last_column_contains_all_nans:
+        output_data = output_data.iloc[:, :-1]
+    else:
+        output_data = output_data.copy()
+    
     if formated==True:   
         return(format_dataframes(output_data, True))
     else:
@@ -640,20 +757,59 @@ def table_year(data_ori, year_ini, rounded=False, formated=True):
         return(format_dataframes(data_output, True))
     else:
         return(format_dataframes(data_output, False))
+    
+#Defining years
+max_year= 2024
+available_years = list(range(2018,max_year))
+index_year = 2023
 
-############################################################# PESTÑA ANALISIS DE MERCADO ########################################################
+############################################################# PESTAÑA ANALISIS DE MERCADO ########################################################
 
 if selected=="Análisis de mercado":
     left, center, right = st.columns((1,1,1))
     with left:
-        selected_type = st.radio("**Mercado de venta o alquiler**", ("Venta", "Alquiler"))
+        selected_geo = st.radio("**Àrea geográfica**", ("Provincias", "Municipios"))
     with center:
-        selected_mun = st.selectbox("**Selecciona un municipio:**", maestro_mun[maestro_mun["ADD"]=="SI"]["Municipi"].unique(), index= maestro_mun[maestro_mun["ADD"]=="SI"]["Municipi"].tolist().index("Barcelona"))
+        if selected_geo=="Provincias":
+            prov_names = ["Barcelona", "Girona", "Tarragona", "Lleida"]
+            selected_prov = st.selectbox('**Selecciona una província:**', prov_names, index= prov_names.index("Barcelona"))      
+        if selected_geo=="Municipios":
+            selected_mun = st.selectbox("**Selecciona un municipio:**", maestro_mun[maestro_mun["ADD"]=="SI"]["Municipi"].unique(), index= maestro_mun[maestro_mun["ADD"]=="SI"]["Municipi"].tolist().index("Barcelona"))
     with right:
-        max_year=datetime.now().year-1
+        max_year= 2024
+        available_years = list(range(2018,max_year))
+        index_year = 2023
         available_years = list(range(2018, datetime.now().year))
         selected_year_n = st.selectbox("**Selecciona un año:**", available_years, available_years.index(2023))
-    if selected_type=="Venta":
+    if selected_geo=="Provincias":
+        min_year=2014
+        st.subheader(f"PREUS PER M\u00b2 CONSTRUÏT D'HABITATGE A {selected_prov.upper()}")
+        st.markdown(f'<div class="custom-box">ANY {selected_year_n}</div>', unsafe_allow_html=True)
+        table_province = tidy_Catalunya(DT_terr, ["Fecha"] + concatenate_lists(["prvivt_", "prvivs_", "prvivn_"], selected_prov), f"{str(min_year)}-01-01", f"{str(max_year)}-01-01",["Data", "Preu d'habitatge total", "Preus d'habitatge de segona mà", "Preus d'habitatge nou"])
+        table_province_y = tidy_Catalunya_anual(DT_terr_y, ["Fecha"]  + concatenate_lists(["prvivt_", "prvivs_", "prvivn_"], selected_prov), min_year, max_year,["Any","Preu d'habitatge total", "Preus d'habitatge de segona mà", "Preus d'habitatge nou"])
+        left, center, right = st.columns((1,1,1))
+        with left:
+            st.metric(label="**Preu d'habitatge total** (€/m\u00b2)", value=f"""{indicator_year(table_province_y, table_province, str(selected_year_n), "Preu d'habitatge total", "level"):,.0f}""", delta=f"""{indicator_year(table_province_y, table_province, str(selected_year_n), "Preu d'habitatge total", "var")}%""")
+        with center:
+            st.metric(label="**Preus d'habitatge de segona mà** (€/m\u00b2)", value=f"""{indicator_year(table_province_y, table_province, str(selected_year_n), "Preus d'habitatge de segona mà", "level"):,.0f}""", delta=f"""{indicator_year(table_province_y, table_province, str(selected_year_n), "Preus d'habitatge de segona mà", "var")}%""")
+        with right:
+            st.metric(label="**Preus d'habitatge nou** (€/m\u00b2)", value=f"""{indicator_year(table_province_y, table_province, str(selected_year_n), "Preus d'habitatge nou", "level"):,.0f}""", delta=f"""{indicator_year(table_province_y, table_province, str(selected_year_n), "Preus d'habitatge nou", "var")}%""") 
+        st.markdown("")
+        st.markdown("")
+        # st.subheader("**DADES TRIMESTRALS MÉS RECENTS**")
+        st.markdown(table_trim(table_province, 2020, True, False).to_html(), unsafe_allow_html=True)
+        st.markdown(filedownload(table_trim(table_province, 2014, True, False), f"{selected_prov}.xlsx"), unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown("")
+        # st.subheader("**DADES ANUALS**")
+        st.markdown(table_year(table_province_y, 2014, True, False).to_html(), unsafe_allow_html=True)
+        st.markdown(filedownload(table_year(table_province_y, 2014, True, False), f"{selected_prov}_anual.xlsx"), unsafe_allow_html=True)
+        left_col, right_col = st.columns((1,1))
+        with left_col:
+            st.plotly_chart(line_plotly(table_province, table_province.columns.tolist(), "Evolució trimestral dels preus per m\u00b2 construït per tipologia d'habitatge", "€/m\u00b2 construït"), use_container_width=True, responsive=True)
+        with right_col:
+            st.plotly_chart(bar_plotly(table_province_y, table_province.columns.tolist(), "Evolució anual dels preus per m\u00b2 construït per tipologia d'habitatge", "€/m\u00b2 construït", 2005), use_container_width=True, responsive=True)     
+    if selected_geo=="Municipios":
         min_year=2014
         st.subheader(f"PRECIOS PER M\u00b2 CONSTRUIDO EN {selected_mun.upper()}")
         st.markdown(f'<div class="custom-box">ANY {selected_year_n}</div>', unsafe_allow_html=True)   
@@ -694,41 +850,6 @@ if selected=="Análisis de mercado":
             st.plotly_chart(line_plotly(table_mun, table_mun.columns.tolist(), "Evolución trimestral dels preus per m\u00b2 construido por tipologia", "€/m\u00b2 útil", True), use_container_width=True, responsive=True)
         with right_col:
             st.plotly_chart(bar_plotly(table_mun_y, table_mun.columns.tolist(), "Evolución anual dels preus per m\u00b2 construido por tipologia", "€/m\u00b2 útil", 2005), use_container_width=True, responsive=True)
-    if selected_type=="Alquiler":
-        min_year=2014
-        st.subheader(f"MERCAT DE LLOGUER A {selected_mun.upper()}")
-        st.markdown(f'<div class="custom-box">ANY {selected_year_n}</div>', unsafe_allow_html=True)
-        table_mun = tidy_Catalunya(DT_mun, ["Fecha"] + concatenate_lists(["trvivalq_", "pmvivalq_"], selected_mun), f"{str(min_year)}-01-01", f"{str(max_year+1)}-01-01",["Data", "Nombre de contractes de lloguer", "Rendes mitjanes de lloguer"])
-        table_mun_y = tidy_Catalunya_anual(DT_mun_y, ["Fecha"] + concatenate_lists(["trvivalq_", "pmvivalq_"], selected_mun), min_year, max_year,["Any", "Nombre de contractes de lloguer", "Rendes mitjanes de lloguer"])
-        left_col, right_col = st.columns((1,1))
-        with left_col:
-            try:
-                st.metric(label="**Nombre de contractes de lloguer**", value=f"""{indicator_year(table_mun_y, table_mun, str(selected_year_n), "Nombre de contractes de lloguer", "level"):,.0f}""", delta=f"""{indicator_year(table_mun_y, table_mun, str(selected_year_n), "Nombre de contractes de lloguer", "var")}%""")
-            except IndexError:
-                st.metric(label="**Nombre de contractes de lloguer**", value="n/a")
-        with right_col:
-            try:
-                st.metric(label="**Rendes mitjanes de lloguer** (€/mes)", value=f"""{indicator_year(table_mun_y, table_mun, str(selected_year_n), "Rendes mitjanes de lloguer", "level"):,.0f}""", delta=f"""{indicator_year(table_mun_y, table_mun, str(selected_year_n), "Rendes mitjanes de lloguer", "var")}%""")
-            except IndexError:
-                st.metric(label="**Rendes mitjanes de lloguer** (€/mes)", value="n/a")
-                st.markdown("")
-        st.markdown("")
-        # st.subheader("**DADES TRIMESTRALS MÉS RECENTS**")
-        st.markdown(table_trim(table_mun, 2020, rounded=True).to_html(), unsafe_allow_html=True)
-        st.markdown(filedownload(table_trim(table_mun, 2014, rounded=True), f"{selected_type}_{selected_mun}.xlsx"), unsafe_allow_html=True)
-        st.markdown("")
-        st.markdown("")
-        # st.subheader("**DADES ANUALS**")
-        st.markdown(table_year(table_mun_y, 2014, rounded=True).to_html(), unsafe_allow_html=True)
-        st.markdown(filedownload(table_year(table_mun_y, 2014, rounded=True), f"{selected_type}_{selected_mun}_anual.xlsx"), unsafe_allow_html=True)
-        left_col, right_col = st.columns((1,1))
-        with left_col:
-            st.plotly_chart(line_plotly(table_mun, ["Rendes mitjanes de lloguer"], "Evolució trimestral de les rendes mitjanes de lloguer", "€/mes", True), use_container_width=True, responsive=True)
-            st.plotly_chart(line_plotly(table_mun, ["Nombre de contractes de lloguer"], "Evolució trimestral del nombre de contractes de lloguer", "Nombre de contractes"), use_container_width=True, responsive=True)
-        with right_col:
-            st.plotly_chart(bar_plotly(table_mun_y, ["Rendes mitjanes de lloguer"], "Evolució anual de les rendes mitjanes de lloguer", "€/mes", 2005), use_container_width=True, responsive=True)
-            st.plotly_chart(bar_plotly(table_mun_y, ["Nombre de contractes de lloguer"],  "Evolució anual del nombre de contractes de lloguer", "Nombre de contractes", 2005), use_container_width=True, responsive=True)
-
 
 ############################################################# PROVINCIES FUNCIONS #############################################
 @st.cache_resource
