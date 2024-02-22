@@ -447,6 +447,10 @@ if selected == "Análisis dinámico":
 # DT_terr, DT_terr_y, DT_mun, DT_mun_y, maestro_mun = import_data()
 @st.cache_resource
 def import_data(trim_limit, month_limit):
+    with open('Censo2021.json', 'r') as outfile:
+        list_censo = [pd.DataFrame.from_dict(item) for item in json.loads(outfile.read())]
+    censo_2021= list_censo[0].copy()
+    rentaneta_mun= list_censo[1].copy()
     with open('DT_simple.json', 'r') as outfile:
         list_of_df = [pd.DataFrame.from_dict(item) for item in json.loads(outfile.read())]
     DT_terr= list_of_df[0].copy()
@@ -486,9 +490,9 @@ def import_data(trim_limit, month_limit):
     DT_mun_y_def = pd.merge(DT_mun_y_pre2, DT_mun_y_aux3, how="left", on="Fecha")    
     DT_mun_y_def = DT_mun_y_def[[col for col in DT_mun_y_def.columns if any(mun in col for mun in mun_list)]]
 
-    return([DT_monthly, DT_terr, DT_terr_y, DT_mun_def, DT_mun_y_def, DT_dis, DT_dis_y, maestro_mun, maestro_dis])
+    return([DT_monthly, DT_terr, DT_terr_y, DT_mun_def, DT_mun_y_def, DT_dis, DT_dis_y, maestro_mun, maestro_dis, censo_2021, rentaneta_mun])
 
-DT_monthly, DT_terr, DT_terr_y, DT_mun, DT_mun_y, DT_dis, DT_dis_y, maestro_mun, maestro_dis = import_data("2024-01-01", "2023-12-01")
+DT_monthly, DT_terr, DT_terr_y, DT_mun, DT_mun_y, DT_dis, DT_dis_y, maestro_mun, maestro_dis, censo_2021, rentaneta_mun = import_data("2024-01-01", "2023-12-01")
 
 ##@st.cache_data(show_spinner="**Carregant les dades... Esperi, siusplau**", max_entries=500)
 @st.cache_resource
@@ -809,8 +813,12 @@ if selected=="Análisis de mercado":
     with left:
         selected_option = st.radio("**Àrea geográfica**", ("Provincias", "Municipios", "Distritos de Barcelona"), horizontal=True)
     with center:
-        index_names = ["Preus", "Superfície", "Producció", "Compravendes", ]
-        selected_index = st.selectbox("**Selecciona un indicador:**", index_names)
+        if selected_option!="Municipios":
+            index_names = ["Preus", "Superfície", "Producció", "Compravendes"]
+            selected_index = st.selectbox("**Selecciona un indicador:**", index_names)
+        if selected_option=="Municipios":
+            index_names_mun = ["Preus", "Superfície", "Producció", "Compravendes", "Definición de producto"]
+            selected_index = st.selectbox("**Selecciona un indicador:**", index_names_mun)
     with center_aux:
         if selected_option=="Provincias":
             prov_names = ["Barcelona", "Girona", "Tarragona", "Lleida"]
@@ -824,7 +832,8 @@ if selected=="Análisis de mercado":
         available_years = list(range(2018,max_year))
         index_year = 2023
         available_years = list(range(2018, datetime.now().year))
-        selected_year_n = st.selectbox("**Selecciona un año:**", available_years, available_years.index(2023))
+        if selected_index!="Definición de producto":
+            selected_year_n = st.selectbox("**Selecciona un año:**", available_years, available_years.index(2023))
     if selected_option=="Provincias":
         if selected_index=="Producció":
                 min_year=2008
@@ -1149,6 +1158,18 @@ if selected=="Análisis de mercado":
                 st.plotly_chart(line_plotly(table_mun, table_mun.columns.tolist(), "Evolució trimestral de la superfície mitjana per tipologia d'habitatge", "m\u00b2 útil", True), use_container_width=True, responsive=True)
             with right_col:
                 st.plotly_chart(bar_plotly(table_mun_y, table_mun.columns.tolist(), "Evolució anual de la superfície mitjana per tipologia d'habitatge", "m\u00b2 útil", 2005), use_container_width=True, responsive=True)
+        if selected_index=="Definición de producto":
+            st.table(censo_2021[censo_2021["Municipi"]==selected_mun])
+            st.table(rentaneta_mun[["Año","rentanetacapita_" + selected_mun]])
+            st.table(rentaneta_mun[["Año","rentanetahogar_" + selected_mun]])
+            left, right = st.columns((1,1))
+            with left:
+                st.metric("Tamaño del hogar más frecuente", value=censo_2021[censo_2021["Municipi"]==selected_mun]["Tamaño_hogar_frecuente"].values[0])
+                st.metric("Porcentaje de población extranjera", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Porc_Extranjera"].values[0],2)}%""")
+                st.metric("Renta neta por hogar (2021)", value=rentaneta_mun["rentanetahogar_" + selected_mun].values[-1])
+            with right:
+                st.metric("Tamaño medio del hogar", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Tamaño_hogar_medio"].values[0],2)}""")
+                st.metric("Porcentaje de población con educación superior", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Porc_Edu_superior"].values[0],2)}%""")
     if selected_option=="Distritos de Barcelona":
         if selected_index=="Producció":
             min_year=2011
