@@ -451,6 +451,12 @@ def import_data(trim_limit, month_limit):
         list_censo = [pd.DataFrame.from_dict(item) for item in json.loads(outfile.read())]
     censo_2021= list_censo[0].copy()
     rentaneta_mun= list_censo[1].copy()
+    rentaneta_mun = rentaneta_mun.applymap(lambda x: x.replace(".", "") if isinstance(x, str) else x)
+    rentaneta_mun = rentaneta_mun.apply(pd.to_numeric, errors='ignore')
+    censo_2021_dis= list_censo[2].copy()
+    rentaneta_dis = list_censo[3].copy()
+    rentaneta_dis = rentaneta_dis.applymap(lambda x: x.replace(".", "") if isinstance(x, str) else x)
+    rentaneta_dis = rentaneta_dis.apply(pd.to_numeric, errors='ignore')
     with open('DT_simple.json', 'r') as outfile:
         list_of_df = [pd.DataFrame.from_dict(item) for item in json.loads(outfile.read())]
     DT_terr= list_of_df[0].copy()
@@ -490,10 +496,22 @@ def import_data(trim_limit, month_limit):
     DT_mun_y_def = pd.merge(DT_mun_y_pre2, DT_mun_y_aux3, how="left", on="Fecha")    
     DT_mun_y_def = DT_mun_y_def[[col for col in DT_mun_y_def.columns if any(mun in col for mun in mun_list)]]
 
-    return([DT_monthly, DT_terr, DT_terr_y, DT_mun_def, DT_mun_y_def, DT_dis, DT_dis_y, maestro_mun, maestro_dis, censo_2021, rentaneta_mun])
+    return([DT_monthly, DT_terr, DT_terr_y, DT_mun_def, DT_mun_y_def, DT_dis, DT_dis_y, maestro_mun, maestro_dis, censo_2021, rentaneta_mun, censo_2021_dis, rentaneta_dis])
 
-DT_monthly, DT_terr, DT_terr_y, DT_mun, DT_mun_y, DT_dis, DT_dis_y, maestro_mun, maestro_dis, censo_2021, rentaneta_mun = import_data("2024-01-01", "2023-12-01")
+DT_monthly, DT_terr, DT_terr_y, DT_mun, DT_mun_y, DT_dis, DT_dis_y, maestro_mun, maestro_dis, censo_2021, rentaneta_mun, censo_2021_dis, rentaneta_dis = import_data("2024-01-01", "2023-12-01")
 
+# @st.cache_resource
+# def import_hogares():
+#     hogares = pd.read_csv(path + "59543.csv", sep=";", decimal= ",", thousands=".").dropna(axis=0).drop("Total Nacional", axis=1)
+#     hogares['Municipi'] = hogares['Municipios'].apply(lambda x: x.split(" ", 1)[-1])
+#     hogares['Codi'] = hogares['Municipios'].apply(lambda x: x.split(" ", 1)[0])
+#     hogares['PROV'] =  hogares["Codi"].str[0:2]
+#     hogares = hogares[hogares["PROV"].isin(["08", '17', '43', '25'])].drop("PROV", axis=1)
+#     hogares = hogares[hogares["Tamaño del hogar"]!="Total (tamaño del hogar)"].drop("Municipios", axis=1)
+#     hogares["Tamaño"] = hogares["Tamaño del hogar"].str[0]
+#     hogares = hogares.drop("Tamaño del hogar", axis=1)
+#     return(hogares)
+# hogares_mun = import_hogares()
 ##@st.cache_data(show_spinner="**Carregant les dades... Esperi, siusplau**", max_entries=500)
 @st.cache_resource
 def tidy_Catalunya_m(data_ori, columns_sel, fecha_ini, fecha_fin, columns_output):
@@ -813,10 +831,10 @@ if selected=="Análisis de mercado":
     with left:
         selected_option = st.radio("**Àrea geográfica**", ("Provincias", "Municipios", "Distritos de Barcelona"), horizontal=True)
     with center:
-        if selected_option!="Municipios":
+        if selected_option=="Provincias":
             index_names = ["Preus", "Superfície", "Producció", "Compravendes"]
             selected_index = st.selectbox("**Selecciona un indicador:**", index_names)
-        if selected_option=="Municipios":
+        if selected_option!="Provincias":
             index_names_mun = ["Preus", "Superfície", "Producció", "Compravendes", "Definición de producto"]
             selected_index = st.selectbox("**Selecciona un indicador:**", index_names_mun)
     with center_aux:
@@ -1159,17 +1177,113 @@ if selected=="Análisis de mercado":
             with right_col:
                 st.plotly_chart(bar_plotly(table_mun_y, table_mun.columns.tolist(), "Evolució anual de la superfície mitjana per tipologia d'habitatge", "m\u00b2 útil", 2005), use_container_width=True, responsive=True)
         if selected_index=="Definición de producto":
-            st.table(censo_2021[censo_2021["Municipi"]==selected_mun])
-            st.table(rentaneta_mun[["Año","rentanetacapita_" + selected_mun]])
-            st.table(rentaneta_mun[["Año","rentanetahogar_" + selected_mun]])
+            def bar_plotly(table_n, selection_n, title_main, title_y, year_ini, year_fin=datetime.now().year-1):
+                table_n = table_n.reset_index()
+                table_n["Any"] = table_n["Any"].astype(int)
+                plot_cat = table_n[(table_n["Any"] >= year_ini) & (table_n["Any"] <= year_fin)][["Any"] + selection_n].set_index("Any")
+                colors = ["#6495ED", "#7DF9FF",  "#87CEEB", "#A7C7E7"]
+                traces = []
+                for i, col in enumerate(plot_cat.columns):
+                    trace = go.Bar(
+                        x=plot_cat.index,
+                        y=plot_cat[col]/1000,
+                        name=col,
+                        text=plot_cat[col], 
+                        textfont=dict(color="white"),
+                        marker=dict(color=colors[i % len(colors)]),
+                    )
+                    traces.append(trace)
+                layout = go.Layout(
+                    title=dict(text=title_main, font=dict(size=13)),
+                    xaxis=dict(title="Any"),
+                    yaxis=dict(title=title_y, tickformat=",d"),
+                    legend=dict(x=0, y=1.15, orientation="h"),
+                    paper_bgcolor = "#edf1fc",
+                    plot_bgcolor='#edf1fc'
+                )
+                fig = go.Figure(data=traces, layout=layout)
+                return fig
+            def donut_plotly(table_n, selection_n, title_main, title_y):
+                plot_cat = table_n[selection_n]
+                plot_cat = plot_cat.set_index("Tamaño").sort_index()
+                colors = ["#6495ED", "#7DF9FF",  "#87CEEB", "#A7C7E7", "#FFA07A"]
+                traces = []
+                for i, col in enumerate(plot_cat.columns):
+                    trace = go.Pie(
+                        labels=plot_cat.index,
+                        values=plot_cat[col],
+                        name=col,
+                        hole=0.5,
+                        marker=dict(colors=colors)
+                    )
+                    traces.append(trace)
+                layout = go.Layout(
+                    title=dict(text=title_main, font=dict(size=13)),
+                    yaxis=dict(title=title_y),
+                    legend=dict(x=0, y=1.15, orientation="h"),
+                    paper_bgcolor="#edf1fc",
+                    plot_bgcolor='#edf1fc'
+                )
+                fig = go.Figure(data=traces, layout=layout)
+                return fig
+            st.markdown(f'<div class="custom-box">DEMOGRAFÍA Y RENTA (2021)</div>', unsafe_allow_html=True)
+            subset_tamaño_mun = censo_2021[censo_2021["Municipi"] == selected_mun][["1", "2", "3", "4", "5 o más"]]
+            subset_tamaño_mun_aux = subset_tamaño_mun.T.reset_index()
+            subset_tamaño_mun_aux.columns = ["Tamaño", "Hogares"]
             left, right = st.columns((1,1))
             with left:
                 st.metric("Tamaño del hogar más frecuente", value=censo_2021[censo_2021["Municipi"]==selected_mun]["Tamaño_hogar_frecuente"].values[0])
-                st.metric("Porcentaje de población extranjera", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Porc_Extranjera"].values[0],2)}%""")
-                st.metric("Renta neta por hogar (2021)", value=rentaneta_mun["rentanetahogar_" + selected_mun].values[-1])
+                st.metric("Porcentaje de población extranjera", value=f"""{round(100 - censo_2021[censo_2021["Municipi"]==selected_mun]["Perc_extranjera"].values[0],1)}%""")
+                st.metric("Renta neta por hogar", value=rentaneta_mun["rentanetahogar_" + selected_mun].values[-1])
+                st.plotly_chart(bar_plotly(rentaneta_mun.rename(columns={"Año":"Any"}).set_index("Any"), ["rentanetahogar_" + selected_mun], "Evolución anual de la renta media neta anual", "€", 2015), use_container_width=True, responsive=True)
             with right:
-                st.metric("Tamaño medio del hogar", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Tamaño_hogar_medio"].values[0],2)}""")
-                st.metric("Porcentaje de población con educación superior", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Porc_Edu_superior"].values[0],2)}%""")
+                st.metric("Tamaño medio del hogar", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Tamaño medio del hogar"].values[0],2)}""")
+                st.metric("Porcentaje de población extranjera", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Perc_extranjera"].values[0],1)}%""")
+                st.metric("Porcentaje de población con educación superior", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Porc_Edu_superior"].values[0],1)}%""")
+                st.plotly_chart(donut_plotly(subset_tamaño_mun_aux,["Tamaño", "Hogares"], "Distribución del número de miembros por hogar", "Hogares"), use_container_width=True, responsive=True)
+            st.markdown(f'<div class="custom-box">CARACTERÍSTICAS DEL PARQUE TOTAL DE VIVIENDAS (2021)</div>', unsafe_allow_html=True)
+            left, right = st.columns((1,1))
+            with left:
+                st.metric("Porcentaje de viviendas en propiedad", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Perc_propiedad"].values[0],1)}%""")
+                st.metric("Porcentaje de viviendas principales", value=f"""{round(100 - censo_2021[censo_2021["Municipi"]==selected_mun]["Perc_noprincipales_y"].values[0],1)}%""")
+                st.metric("Edad media de las viviendas", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Edad media"].values[0],1)}""")
+            with right:
+                st.metric("Porcentaje de viviendas en alquiler", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Perc_alquiler"].values[0], 1)}%""")
+                st.metric("Porcentaje de viviendas no principales", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Perc_noprincipales_y"].values[0],1)}%""")
+                st.metric("Superficie media de las viviendas", value=f"""{round(censo_2021[censo_2021["Municipi"]==selected_mun]["Superficie media"].values[0],1)}""")
+            st.markdown(f'<div class="custom-box">TIPOLOGÍA I SUPERFICIES DE LOS VISADOS DE OBRA NUEVA Y CERTIFICADOS DE FIN DE OBRA</div>', unsafe_allow_html=True)
+            table_ini_mun_y = tidy_Catalunya_anual(DT_mun_y, ["Fecha"] + concatenate_lists(["iniviv_uni_", "iniviv_pluri_"], selected_mun), 2018, 2023,["Any","Habitatges iniciats unifamiliars", "Habitatges iniciats plurifamiliars"]).sum(axis=0).reset_index().set_index("index")
+            table_fin_mun_y = tidy_Catalunya_anual(DT_mun_y, ["Fecha"] + concatenate_lists(["finviv_uni_", "finviv_pluri_"], selected_mun), 2018, 2023,["Any","Habitatges acabats unifamiliars", "Habitatges acabats plurifamiliars"]).sum(axis=0).reset_index().set_index("index")
+            table_mun_pluri_y = tidy_Catalunya_anual(DT_mun_y, ["Fecha"] + concatenate_lists(["iniviv_pluri_50m2_","iniviv_pluri_5175m2_", "iniviv_pluri_76100m2_","iniviv_pluri_101125m2_", "iniviv_pluri_126150m2_", "iniviv_pluri_150m2_"], selected_mun), 2018, 2023,["Any", "Plurifamiliar fins a 50m2","Plurifamiliar entre 51m2 i 75 m2", "Plurifamiliar entre 76m2 i 100m2","Plurifamiliar entre 101m2 i 125m2", "Plurifamiliar entre 126m2 i 150m2", "Plurifamiliar de més de 150m2"]).sum(axis=0).reset_index().set_index("index")
+            table_mun_uni_y = tidy_Catalunya_anual(DT_mun_y, ["Fecha"] + concatenate_lists(["iniviv_uni_50m2_","iniviv_uni_5175m2_", "iniviv_uni_76100m2_","iniviv_uni_101125m2_", "iniviv_uni_126150m2_", "iniviv_uni_150m2_"], selected_mun), 2018, 2023, ["Any", "Unifamiliar fins a 50m2","Unifamiliar entre 51m2 i 75 m2", "Unifamiliar entre 76m2 i 100m2","Unifamiliar entre 101m2 i 125m2", "Unifamiliar entre 126m2 i 150m2", "Unifamiliar de més de 150m2"]).sum(axis=0).reset_index().set_index("index")
+            def donut_plotly(table_n, title_main, title_y):
+                colors = ["#6495ED", "#7DF9FF",  "#87CEEB", "#A7C7E7", "#FFA07A"]
+                traces = []
+                for i, col in enumerate(table_n.columns):
+                    trace = go.Pie(
+                        labels=table_n.index,
+                        values=table_n[col],
+                        name=col,
+                        hole=0.5,
+                        marker=dict(colors=colors)
+                    )
+                    traces.append(trace)
+                layout = go.Layout(
+                    title=dict(text=title_main, font=dict(size=13)),
+                    yaxis=dict(title=title_y),
+                    legend=dict(x=0, y=1.15, orientation="h"),
+                    paper_bgcolor="#edf1fc",
+                    plot_bgcolor='#edf1fc'
+                )
+                fig = go.Figure(data=traces, layout=layout)
+                return fig
+            left, right = st.columns((1,1))
+            with left:
+                st.plotly_chart(donut_plotly(table_ini_mun_y, "Distribución por tipología de las viviendas visadas (2023-2018)",""))
+                st.plotly_chart(donut_plotly(table_mun_pluri_y, "Distribución de superficies de las viviendas plurifamiliares visadas (2023-2018)",""))
+            with right:
+                st.plotly_chart(donut_plotly(table_fin_mun_y, "Distribución por tipología de las viviendas acabadas (2023-2018)",""))
+                st.plotly_chart(donut_plotly(table_mun_uni_y, "Distribución de superficies de las viviendas unifamiliares visadas (2023-2018)",""))
     if selected_option=="Distritos de Barcelona":
         if selected_index=="Producció":
             min_year=2011
@@ -1314,3 +1428,112 @@ if selected=="Análisis de mercado":
                 st.plotly_chart(line_plotly(table_dis.iloc[12:,:], table_dis.columns.tolist(), "Evolució trimestral de la superfície mitjana per tipologia d'habitatge", "m2 útil", True), use_container_width=True, responsive=True)
             with right_col:
                 st.plotly_chart(bar_plotly(table_dis_y, table_dis.columns.tolist(), "Evolució anual de la superfície mitjana per tipologia d'habitatge", "m2 útil", 2017), use_container_width=True, responsive=True)
+        if selected_index=="Definición de producto":
+            def bar_plotly(table_n, selection_n, title_main, title_y, year_ini, year_fin=datetime.now().year-1):
+                table_n = table_n.reset_index()
+                table_n["Any"] = table_n["Any"].astype(int)
+                plot_cat = table_n[(table_n["Any"] >= year_ini) & (table_n["Any"] <= year_fin)][["Any"] + selection_n].set_index("Any")
+                colors = ["#6495ED", "#7DF9FF",  "#87CEEB", "#A7C7E7"]
+                traces = []
+                for i, col in enumerate(plot_cat.columns):
+                    trace = go.Bar(
+                        x=plot_cat.index,
+                        y=plot_cat[col]/1000,
+                        name=col,
+                        text=plot_cat[col], 
+                        textfont=dict(color="white"),
+                        marker=dict(color=colors[i % len(colors)]),
+                    )
+                    traces.append(trace)
+                layout = go.Layout(
+                    title=dict(text=title_main, font=dict(size=13)),
+                    xaxis=dict(title="Any"),
+                    yaxis=dict(title=title_y, tickformat=",d"),
+                    legend=dict(x=0, y=1.15, orientation="h"),
+                    paper_bgcolor = "#edf1fc",
+                    plot_bgcolor='#edf1fc'
+                )
+                fig = go.Figure(data=traces, layout=layout)
+                return fig
+            def donut_plotly(table_n, selection_n, title_main, title_y):
+                plot_cat = table_n[selection_n]
+                plot_cat = plot_cat.set_index("Tamaño").sort_index()
+                colors = ["#6495ED", "#7DF9FF",  "#87CEEB", "#A7C7E7", "#FFA07A"]
+                traces = []
+                for i, col in enumerate(plot_cat.columns):
+                    trace = go.Pie(
+                        labels=plot_cat.index,
+                        values=plot_cat[col],
+                        name=col,
+                        hole=0.5,
+                        marker=dict(colors=colors)
+                    )
+                    traces.append(trace)
+                layout = go.Layout(
+                    title=dict(text=title_main, font=dict(size=13)),
+                    yaxis=dict(title=title_y),
+                    legend=dict(x=0, y=1.15, orientation="h"),
+                    paper_bgcolor="#edf1fc",
+                    plot_bgcolor='#edf1fc'
+                )
+                fig = go.Figure(data=traces, layout=layout)
+                return fig
+            st.markdown(f'<div class="custom-box">DEMOGRAFÍA Y RENTA (2021)</div>', unsafe_allow_html=True)
+            left, right = st.columns((1,1))
+            with left:
+                subset_tamaño_dis = censo_2021_dis[censo_2021_dis["Distrito"] == selected_dis][["1", "2", "3", "4", "5 o más"]]
+                subset_tamaño_dis_aux = subset_tamaño_dis.T.reset_index()
+                subset_tamaño_dis_aux.columns = ["Tamaño", "Hogares"]
+                max_column = subset_tamaño_dis.idxmax(axis=1).values[0]
+                st.metric("Tamaño del hogar más frecuente", value=max_column)
+                st.metric("Porcentaje de población nacional", value=f"""{round(100 - censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Perc_extranjera"].values[0]*100,1)}%""")
+                st.metric("Renta neta por hogar", value=rentaneta_dis["rentahogar_" + selected_dis].values[-1])
+                st.plotly_chart(bar_plotly(rentaneta_dis.rename(columns={"Año":"Any"}).set_index("Any"), ["rentahogar_" + selected_dis], "Evolución anual de la renta media neta anual", "€", 2015), use_container_width=True, responsive=True)
+            with right:
+                st.metric("Tamaño medio del hogar", value=f"""{censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Tamaño medio del hogar"].values[0]}""")
+                st.metric("Porcentaje de población extranjera", value=f"""{round(censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Perc_extranjera"].values[0],1)}%""")
+                st.metric("Porcentaje de población con educación superior", value=f"""{round(censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Perc_edusuperior"].values[0]*100,1)}%""")
+                st.plotly_chart(donut_plotly(subset_tamaño_dis_aux,["Tamaño", "Hogares"], "Distribución del número de miembros por hogar", "Hogares"), use_container_width=True, responsive=True)
+            st.markdown(f'<div class="custom-box">CARACTERÍSTICAS DEL PARQUE TOTAL DE VIVIENDAS (2021)</div>', unsafe_allow_html=True)
+            left, right = st.columns((1,1))
+            with left:
+                st.metric("Porcentaje de viviendas en propiedad", value=f"""{round(censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Perc_propiedad"].values[0],1)}%""")
+                st.metric("Porcentaje de viviendas principales", value=f"""{round(100 - censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Perc_noprincipales"].values[0],1)}%""")
+                st.metric("Edad media de las viviendas", value=f"""{round(censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Edad media"].values[0],1)}""")
+            with right:
+                st.metric("Porcentaje de viviendas en alquiler", value=f"""{round(censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Perc_alquiler"].values[0], 1)}%""")
+                st.metric("Porcentaje de viviendas no principales", value=f"""{round(censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Perc_noprincipales"].values[0],1)}%""")
+                st.metric("Superficie media de las viviendas", value=f"""{round(censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Superficie Media"].values[0],1)}""")
+            st.markdown(f'<div class="custom-box">TIPOLOGÍA I SUPERFICIES DE LOS VISADOS DE OBRA NUEVA Y CERTIFICADOS DE FIN DE OBRA</div>', unsafe_allow_html=True)
+            table_ini_dis_y = tidy_Catalunya_anual(DT_dis_y, ["Fecha"] + concatenate_lists(["iniviv_uni_", "iniviv_pluri_"], selected_dis), 2018, 2023,["Any","Habitatges iniciats unifamiliars", "Habitatges iniciats plurifamiliars"]).sum(axis=0).reset_index().set_index("index")
+            table_fin_dis_y = tidy_Catalunya_anual(DT_dis_y, ["Fecha"] + concatenate_lists(["finviv_uni_", "finviv_pluri_"], selected_dis), 2018, 2023,["Any","Habitatges acabats unifamiliars", "Habitatges acabats plurifamiliars"]).sum(axis=0).reset_index().set_index("index")
+            # table_dis_pluri_y = tidy_Catalunya_anual(DT_dis_y, ["Fecha"] + concatenate_lists(["iniviv_pluri_50m2_","iniviv_pluri_5175m2_", "iniviv_pluri_76100m2_","iniviv_pluri_101125m2_", "iniviv_pluri_126150m2_", "iniviv_pluri_150m2_"], selected_dis), 2018, 2023,["Any", "Plurifamiliar fins a 50m2","Plurifamiliar entre 51m2 i 75 m2", "Plurifamiliar entre 76m2 i 100m2","Plurifamiliar entre 101m2 i 125m2", "Plurifamiliar entre 126m2 i 150m2", "Plurifamiliar de més de 150m2"]).sum(axis=0).reset_index().set_index("index")
+            # table_dis_uni_y = tidy_Catalunya_anual(DT_dis_y, ["Fecha"] + concatenate_lists(["iniviv_uni_50m2_","iniviv_uni_5175m2_", "iniviv_uni_76100m2_","iniviv_uni_101125m2_", "iniviv_uni_126150m2_", "iniviv_uni_150m2_"], selected_dis), 2018, 2023, ["Any", "Unifamiliar fins a 50m2","Unifamiliar entre 51m2 i 75 m2", "Unifamiliar entre 76m2 i 100m2","Unifamiliar entre 101m2 i 125m2", "Unifamiliar entre 126m2 i 150m2", "Unifamiliar de més de 150m2"]).sum(axis=0).reset_index().set_index("index")
+            def donut_plotly(table_n, title_main, title_y):
+                colors = ["#6495ED", "#7DF9FF",  "#87CEEB", "#A7C7E7", "#FFA07A"]
+                traces = []
+                for i, col in enumerate(table_n.columns):
+                    trace = go.Pie(
+                        labels=table_n.index,
+                        values=table_n[col],
+                        name=col,
+                        hole=0.5,
+                        marker=dict(colors=colors)
+                    )
+                    traces.append(trace)
+                layout = go.Layout(
+                    title=dict(text=title_main, font=dict(size=13)),
+                    yaxis=dict(title=title_y),
+                    legend=dict(x=0, y=1.15, orientation="h"),
+                    paper_bgcolor="#edf1fc",
+                    plot_bgcolor='#edf1fc'
+                )
+                fig = go.Figure(data=traces, layout=layout)
+                return fig
+            left, right = st.columns((1,1))
+            with left:
+                st.plotly_chart(donut_plotly(table_ini_dis_y, "Distribución por tipología de las viviendas visadas (2023-2018)",""))
+                # st.plotly_chart(donut_plotly(table_mun_pluri_y, "Distribución de superficies de las viviendas plurifamiliares visadas (2023-2018)",""))
+            with right:
+                st.plotly_chart(donut_plotly(table_fin_dis_y, "Distribución por tipología de las viviendas acabadas (2023-2018)",""))
+                # st.plotly_chart(donut_plotly(table_mun_uni_y, "Distribución de superficies de las viviendas unifamiliares visadas (2023-2018)",""))
