@@ -1491,7 +1491,7 @@ if selected=="Análisis de mercado":
                 st.plotly_chart(bar_plotly(rentaneta_dis.rename(columns={"Año":"Any"}).set_index("Any"), ["rentahogar_" + selected_dis], "Evolución anual de la renta media neta anual", "€", 2015), use_container_width=True, responsive=True)
             with right:
                 st.metric("Tamaño medio del hogar", value=f"""{censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Tamaño medio del hogar"].values[0]}""")
-                st.metric("Porcentaje de población extranjera", value=f"""{round(censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Perc_extranjera"].values[0],1)}%""")
+                st.metric("Porcentaje de población extranjera", value=f"""{round(censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Perc_extranjera"].values[0],1)*100}%""")
                 st.metric("Porcentaje de población con educación superior", value=f"""{round(censo_2021_dis[censo_2021_dis["Distrito"]==selected_dis]["Perc_edusuperior"].values[0]*100,1)}%""")
                 st.plotly_chart(donut_plotly(subset_tamaño_dis_aux,["Tamaño", "Hogares"], "Distribución del número de miembros por hogar", "Hogares"), use_container_width=True, responsive=True)
             st.markdown(f'<div class="custom-box">CARACTERÍSTICAS DEL PARQUE TOTAL DE VIVIENDAS (2021)</div>', unsafe_allow_html=True)
