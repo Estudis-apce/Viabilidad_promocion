@@ -69,6 +69,7 @@ if selected=="Edificabilidad":
         conn = st.connection("gsheets", type=GSheetsConnection)
         existing_data = conn.read(worksheet="Edificabilidad" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
         existing_data = existing_data.dropna(how="all")
+        st.title("DISTRIBUCIÓN DE SUPERFICIES")
         left, right = st.columns((1,1))
         for index, row in existing_data.iterrows():
             if index % 2 == 0:
@@ -146,11 +147,11 @@ if selected=="Edificabilidad":
             st.plotly_chart(bar_plotly(super_df, "Distribución de superficie en m2", "Superficie en m2"), use_container_width=True, responsive=True)
 
 if selected == "Análisis estático":
-    left, right= st.columns((1,1))
-    with left:
+    left, center, right= st.columns((1,1,1))
+    with center:
         selected_propuesta = st.radio("", ("Propuesta 1", "Propuesta 2", "Propuesta 3", "Comparativa"), horizontal=True)
-    with right:
-        max_trim = st.slider("**Número de trimestres de la operación**", 8, 16, 10)
+    # with right:
+        # max_trim = st.slider("**Número de trimestres de la operación**", 8, 16, 10)
     if selected_propuesta!="Comparativa":
         conn = st.connection("gsheets", type=GSheetsConnection)
         existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
@@ -164,52 +165,76 @@ if selected == "Análisis estático":
         with left:
             input_recursospropios = st.number_input("Recursos propios", min_value=0.0, max_value=999999999.0, value=input_recursospropios, step=1000.0)
             input_creditoconcedido = st.number_input("Crédito concedido",  min_value=0.0, max_value=999999999.0, value=input_creditoconcedido, step=1000.0)
-            input_gastosconstitucion = st.number_input("Gastos de constitución",  min_value=0.0, max_value=999999999.0, value=input_gastosconstitucion, step=1000.0)
+            input_preciom2 = st.number_input("Precio por m2 construido",  min_value=0.0, max_value=999999999.0, value=input_preciom2, step=1000.0)
         with center:
             input_tipodeinteres = st.number_input("Tipo de interés",  min_value=0.0, max_value=999999999.0, value=input_tipodeinteres, step=1000.0)
-            input_comisiondeapertura = st.number_input("Comisión de apertura",  min_value=0.0, max_value=999999999.0, value=input_comisiondeapertura, step=1000.0)
-            input_comisiondecancelacion = st.number_input("Comisión de cancelación",  min_value=0.0, max_value=999999999.0, value=input_comisiondecancelacion, step=1000.0)
+            input_gastosconstitucion = st.number_input("Gastos de constitución",  min_value=0.0, max_value=999999999.0, value=input_gastosconstitucion, step=1000.0)
+            # input_comisiondeapertura = st.number_input("Comisión de apertura",  min_value=0.0, max_value=999999999.0, value=input_comisiondeapertura, step=1000.0)
+            # input_comisiondecancelacion = st.number_input("Comisión de cancelación",  min_value=0.0, max_value=999999999.0, value=input_comisiondecancelacion, step=1000.0)
         with right:
             input_superficieconstruida = st.number_input("Superficie construida",  min_value=0.0, max_value=999999999.0, value=input_superficieconstruida, step=1000.0)
             input_costem2construido = st.number_input("Coste promedio del m2 construido",  min_value=0.0, max_value=999999999.0, value=input_costem2construido, step=1000.0)
-            input_proporcioncompraplano = st.number_input("Proporción de compra sobre plano",  min_value=0.0, max_value=999999999.0, value=input_proporcioncompraplano, step=1000.0)
-        
+            # input_proporcioncompraplano = st.number_input("Proporción de compra sobre plano",  min_value=0.0, max_value=999999999.0, value=input_proporcioncompraplano, step=1000.0)
+            st.write("")
+            submit_reset = st.button(label="Valores predeterminados")
+        if submit_reset:
+            input_ventas1 = input_preciom2*input_superficieconstruida
+            input_creditoconcedido = 0.6*input_ventas1
+            input_edificacion1= input_costem2construido*input_superficieconstruida
+            input_edificacion2 = 0.07*input_edificacion1
+            input_edificacion3 = 0.05*input_edificacion1
+            input_edificacion4 = 0.02*input_edificacion1
+            input_edificacion5 = 0.03*input_edificacion1
+            input_admin1 = 0.05*input_edificacion1
+            input_admin2 = 0.05*input_ventas1
+            input_solar1 = ((input_ventas1/1.2) - input_edificacion1 - input_edificacion2 - input_edificacion3 - input_edificacion4 - input_edificacion5 - input_admin1 - input_admin2)/1.03
+            input_solar2 = 0.03*input_solar1
+            total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
+            input_fin1 = input_creditoconcedido*0.11
+            input_fin2 = 0.01*input_creditoconcedido
+            result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
+            for variable_name in existing_data['Nombre']:
+                variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
+                result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
+            result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
+            conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
+            existing_data = existing_data.dropna(how="all")
         left, right= st.columns((1,1))
         with left:
             st.markdown('<h1 class="title-box">GASTOS</h1>', unsafe_allow_html=True)
             st.header("SOLAR")
             # st.write("Coste asociado al solar es", user_input)
-            input_solar1 = st.number_input("**COMPRA DEL SOLAR**", min_value=0.0, max_value=999999999.0, value=input_solar1, step=1000.0)
-            input_solar2 = st.number_input("**IMPUESTOS (AJD...)**", min_value=0.0, max_value=999999999.0, value=input_solar2, step=1000.0)
-            input_solar3 = st.number_input("**NOTARIA, REGISTRO, COMISIONES...**", min_value=0.0, max_value=999999999.0, value=input_solar3, step=1000.0)
+            input_solar1 = st.number_input("**COSTE SOLAR**", min_value=0.0, max_value=999999999.0, value=input_solar1, step=1000.0, format="""%.1f""")
+            input_solar2 = st.number_input("**OTROS COSTES SOLAR (AJD, NOTARIA, REGISTROS...)**", min_value=0.0, max_value=999999999.0, value=input_solar2, step=1000.0)
             st.header("EDIFICACIÓN")
-            input_edificacion2 = st.number_input("**HONORARIOS PROFESIONALES**", min_value=0.0, max_value=999999999.0, value=input_edificacion2, step=1000.0)
-            input_edificacion3 = st.number_input("**IMPUESTOS Y TASAS MUNICIPALES**", min_value=0.0, max_value=999999999.0, value=input_edificacion3, step=1000.0)
-            input_edificacion4 = st.number_input("**ACOMETIDAS**", min_value=0.0, max_value=999999999.0, value=input_edificacion4, step=1000.0)
-            input_edificacion5 = st.number_input("**CONSTRUCCIÓN**", min_value=0.0, max_value=999999999.0, value=input_edificacion5, step=1000.0)
-            input_edificacion6 = st.number_input("**POSTVENTA**", min_value=0.0, max_value=999999999.0, value=input_edificacion6, step=1000.0)
-            st.header("COMERCIALIZACIÓN")
-            input_com1 = st.number_input("**COMISIONES (5% VENDA)**", min_value=0.0, max_value=999999999.0, value=input_com1, step=1000.0)
+            input_edificacion1 = st.number_input("**COSTES DE EDIFICACIÓN**", min_value=0.0, max_value=999999999.0, value=input_edificacion1, step=1000.0)
+            input_edificacion2 = st.number_input("**HONORARIOS FACULTATIVOS (7%)**", min_value=0.0, max_value=999999999.0, value=input_edificacion2, step=1000.0)
+            input_edificacion3 = st.number_input("**LICENCIAS (5%)**", min_value=0.0, max_value=999999999.0, value=input_edificacion3, step=1000.0)
+            input_edificacion4 = st.number_input("**GASTOS LEGALES (2%)**", min_value=0.0, max_value=999999999.0, value=input_edificacion4, step=1000.0)
+            input_edificacion5 = st.number_input("**OTROS COSTES DE EDIFICACIÓN (3%)**", min_value=0.0, max_value=999999999.0, value=input_edificacion5, step=1000.0)
             st.header("ADMINISTRACIÓN")
-            input_admin1 = st.number_input("**GASTOS DE ADMINISTRACIÓN**", min_value=0.0, max_value=999999999.0, value=input_admin1, step=1000.0)
-            total_gastos = input_solar1 + input_solar2 + input_solar3 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_edificacion6
-            st.metric(label="**TOTAL GASTOS**", value=total_gastos)
+            input_admin1 = st.number_input("**ADMINISTRACIÓN DE LA PROMOCIÓN**", min_value=0.0, max_value=999999999.0, value=input_admin1, step=1000.0)
+            st.header("COMERCIALIZACIÓN")
+            input_admin2 = st.number_input("**COMERCIALIZACIÓN DE LA PROMOCIÓN**", min_value=0.0, max_value=999999999.0, value=input_admin2, step=1000.0)
+            total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
+            st.metric(label="**TOTAL GASTOS**", value=round(total_gastos,0))
         with right:
             st.markdown('<h1 class="title-box-ing">INGRESOS</h1>', unsafe_allow_html=True)
             st.header("VENTAS")
             input_ventas1 = st.number_input("**INGRESOS POR VENTAS**", min_value=0.0, max_value=999999999.0, value=input_ventas1, step=1000.0)
             total_ingresos = input_ventas1 + 0
-            st.metric(label="**TOTAL INGRESOS**", value=total_ingresos)
+            st.metric(label="**TOTAL INGRESOS**", value=round(total_ingresos,1))
+            st.markdown('<h1 class="title-box-res">RESULTADO ANTES DE IMPUESTOS E INTERESES (BAII)</h1>', unsafe_allow_html=True)
+            st.metric(label="**BAII**", value=round(total_ingresos - total_gastos,1))
             st.markdown('<h1 class="title-box-fin">FINANCIACIÓN</h1>', unsafe_allow_html=True)
             input_fin1 = st.number_input("**INTERESES HIPOTECA**", min_value=0.0, max_value=999999999.0, value=input_fin1, step=1000.0)
             input_fin2 = st.number_input("**GASTOS DE CONSTITUCIÓN**", min_value=0.0, max_value=999999999.0, value=input_fin2, step=1000.0)
             total_fin = input_fin1 + input_fin2
             st.metric(label="**TOTAL GASTOS DE FINANCIACIÓN**", value=total_fin)
-            st.markdown('<h1 class="title-box-res">RESULTADO ANTES DE IMPUESTOS E INTERESES (BAII)</h1>', unsafe_allow_html=True)
-            st.metric(label="**BAII**", value=total_ingresos - total_gastos)
             st.markdown('<h1 class="title-box-res">RESULTADO ANTES DE IMPUESTOS (BAI)</h1>', unsafe_allow_html=True)
-            st.metric(label="**BAI**", value=total_ingresos - total_gastos - total_fin)
-            
+            st.metric(label="**BAI**", value=round(total_ingresos - total_gastos - total_fin,1))
             submit_button = st.button(label="Guardar proposta")
             result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
             if submit_button:
@@ -222,83 +247,58 @@ if selected == "Análisis estático":
             conn = st.connection("gsheets", type=GSheetsConnection)
             existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
             existing_data = existing_data.dropna(how="all")
-            with left:
-                def treemap():
-                    data = existing_data[["Parametro", "Valor"]][existing_data["Parametro"]!="INGRESOS POR VENTAS"].iloc[9:,:]
-                    
-                    # Calculate proportions
-                    total_value = data['Valor'].sum()
-                    data['Proportion'] = data['Valor'] / total_value * 100
-                    
-                    # Format proportion as percentage
-                    data['Proportion'] = data['Proportion'].round(2).astype(str) + '%'
-
-                    # Create the treemap
-                    fig = px.treemap(
-                        data,
-                        names='Parametro',
-                        values='Valor',
-                        parents=[''] * len(data),
-                        title="Distribució dels costos de la promoció",
-                        color_discrete_sequence=px.colors.qualitative.Set3,
-                        hover_data={'Proportion': True}  # Display proportion as hover data
-                    )
-                    fig.update_layout(height=600, width=1500, paper_bgcolor="#edf1fc", plot_bgcolor='#edf1fc')
-                    return fig
-                def sorted_barplot_with_proportions():
-                    data = existing_data[["Parametro", "Valor"]][existing_data["Parametro"] != "INGRESOS POR VENTAS"].iloc[9:,:]
-                    
-                    # Calculate proportions
-                    total_value = data['Valor'].sum()
-                    data['Proportion'] = data['Valor'] / total_value * 100
-                    
-                    # Format proportion as percentage
-                    data['Proportion'] = data['Proportion'].round(2).astype(str) + '%'
-
-                    # Sort values by proportion
-                    data = data.sort_values(by='Proportion', ascending=False)
-
-                    # Create the bar plot
-                    fig = px.bar(
-                        data.sort_values(by='Proportion', ascending=False),
-                        x='Parametro',
-                        y='Valor',
-                        title="Distribució dels costos de la promoció",
-                        color='Parametro',
-                        hover_data={'Proportion': True},  # Display proportion as hover data
-                        color_discrete_sequence=px.colors.qualitative.Set3
-                    )
-
-                    # Add annotations for labels
-                    for i, row in data.iterrows():
-                        fig.add_annotation(
-                            x=row['Parametro'], y=row['Valor'],
-                            text=row['Proportion'],
-                            showarrow=False
-                        )
-
-                    fig.update_layout(height=600, width=1500, paper_bgcolor="#edf1fc", plot_bgcolor='#edf1fc')
-                    return fig
-
-                st.plotly_chart(sorted_barplot_with_proportions())
-                st.plotly_chart(treemap())
         left, right = st.columns((1,1))
         with left:
-            calcul_roe = round(((total_ingresos - total_gastos - total_fin)/input_recursospropios)*100, 1)
-            calcul_roi = round(((total_ingresos - total_gastos)/total_gastos)*100, 1)
-            renta_anual = round((((1+(calcul_roe/100))**(1/(max_trim/4)))-1)*100,1)
-            def barplot_ratios():
-                x_values = ['ROE', 'ROI', "Rentabilidad anualizada"]
-                y_values = [calcul_roe, calcul_roi, renta_anual]
-                labels = [f'{value:.1f}%' for value in y_values]  # Format values as percentage with two decimal places
-                fig = go.Figure(data=[go.Bar(x=x_values, y=y_values, text=labels, textposition='auto', width=0.5)])  # Adjust width as needed
-                fig.update_layout(title='RATIOS FINANCIERAS',
-                                xaxis_title='Métrica',
-                                yaxis_title='Porcentaje')
+            def sorted_barplot_with_proportions():
+                data = existing_data[["Parametro", "Valor"]][existing_data["Parametro"] != "INGRESOS POR VENTAS"].iloc[9:,:]
+                
+                # Calculate proportions
+                total_value = data['Valor'].sum()
+                data['Proportion'] = data['Valor'] / total_value * 100
+                
+                # Format proportion as percentage
+                data['Proportion'] = data['Proportion'].round(2).astype(str) + '%'
+
+                # Sort values by proportion
+                data = data.sort_values(by='Proportion', ascending=False)
+
+                # Create the bar plot
+                fig = px.bar(
+                    data.sort_values(by='Proportion', ascending=False),
+                    x='Parametro',
+                    y='Valor',
+                    title="Distribució dels costos de la promoció",
+                    color='Parametro',
+                    hover_data={'Proportion': True},  # Display proportion as hover data
+                    color_discrete_sequence=px.colors.qualitative.Set3
+                )
+
+                # Add annotations for labels
+                for i, row in data.iterrows():
+                    fig.add_annotation(
+                        x=row['Parametro'], y=row['Valor'],
+                        text=row['Proportion'],
+                        showarrow=False
+                    )
+
+                fig.update_layout(height=600, width=1500, paper_bgcolor="#edf1fc", plot_bgcolor='#edf1fc')
                 return fig
-            st.plotly_chart(barplot_ratios())
-        with right:
-            st.write("Result")
+
+            st.plotly_chart(sorted_barplot_with_proportions(), use_container_width=True, responsive=True)
+        # with right:
+        #     calcul_roe = round(((total_ingresos - total_gastos - total_fin)/input_recursospropios)*100, 1)
+        #     calcul_roi = round(((total_ingresos - total_gastos)/total_gastos)*100, 1)
+        #     renta_anual = round((((1+(calcul_roe/100))**(1/(max_trim/4)))-1)*100,1)
+        #     def barplot_ratios():
+        #         x_values = ['ROE', 'ROI', "Rentabilidad anualizada"]
+        #         y_values = [calcul_roe, calcul_roi, renta_anual]
+        #         labels = [f'{value:.1f}%' for value in y_values]  # Format values as percentage with two decimal places
+        #         fig = go.Figure(data=[go.Bar(x=x_values, y=y_values, text=labels, textposition='auto', width=0.5)])  # Adjust width as needed
+        #         fig.update_layout(title='RATIOS FINANCIERAS',
+        #                         xaxis_title='Métrica',
+        #                         yaxis_title='Porcentaje')
+        #         return fig
+        #     st.plotly_chart(barplot_ratios(), use_container_width=True, responsive=True)
     if selected_propuesta=="Comparativa":
         num_propuesta_estatico = ["Propuesta_est1", "Propuesta_est2", "Propuesta_est3"]
         propuesta_estatico_df = []
@@ -394,21 +394,112 @@ if selected == "Análisis dinámico":
     with left:
         start_date =st.date_input("Fecha de inicio de la operación", value="today")
     with center:
-        max_trim = st.slider("**Número de trimestres de la operación**", 8, 16, 10)
+        max_trim = 10
+        # max_trim = st.slider("**Número de trimestres de la operación**", 8, 16, 10)
+        start_quarter = date_to_quarter(start_date)
+        st.write("")
+        st.write("")
+        st.write(f"**Trimestre de inicio: {start_quarter}**")
     with right:
         selected_propuesta = st.radio("", ("Propuesta 1", "Propuesta 2", "Propuesta 3"), horizontal=True)
-
+    # IMPORT DATA FROM GOOGLE SHEET
     conn = st.connection("gsheets", type=GSheetsConnection)
-    existing_data = conn.read(worksheet="Propuesta_din"+ selected_propuesta[-1], usecols=list(range(12)), ttl=5)
-    existing_data = existing_data.dropna(how="all")
-    start_quarter = date_to_quarter(start_date)
-    st.write(f"Trimestre de inicio: {start_quarter}")
+    proportion_data = conn.read(worksheet="Propuesta_din_perc", usecols=list(range(12)), ttl=5).dropna(how="all")
+    display_proportion = proportion_data.iloc[:2,:].drop("Nombre", axis=1)
+    st.table(display_proportion)
     quarters = []
     for i in range(max_trim):
         quarters.append(add_quarters(start_date, i))
     quarters.append("TOTAL")
+    n_columns = st.columns(len(quarters))
+    n_elements = display_proportion["Tesorería"].tolist()
+    analisis_prop = pd.DataFrame(index=n_elements)
+    for i, input_col in enumerate(n_columns):
+        column_data = []
+        with input_col:
+            if i == 0:
+                for j, element in enumerate(n_elements):
+                    value= st.text_input("", element, key=j*1000+10000000000)
+                    column_data.append(value)
+            else:
+                for j in range(len(n_elements)+1):
+                    if j == 0:
+                        value = st.write(quarters[i - 1])
+                    else:
+                        value = st.number_input("", value=display_proportion.iloc[j-1,i], key=int(str(i+1000) + str(j+1000) + str(j+10001)))
+                        column_data.append(value)
+            analisis_prop[str(quarters[i-1])] = column_data
+    submit_button_prop = st.button(label="Guardar evolución")
+    if submit_button_prop:
+        conn.update(worksheet="Propuesta_din_perc", data=analisis_prop)
+        st.success("¡Perfil de evolución guardada!")
+
+
+    proportion_data = proportion_data[~proportion_data["Nombre"].isna()]
+    estatic_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5).dropna(how="all")
+    dinamic_data = conn.read(worksheet="Propuesta_din"+ selected_propuesta[-1], usecols=list(range(12)), ttl=5).dropna(how="all")
+    for index, row in estatic_data.iterrows():
+        variable_name = row['Nombre']
+        variable_value = (row['Valor'])
+        exec(f"{variable_name} = {variable_value}")
+    total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
+    total_edificacion = input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5
+    total_solar = input_solar1 + input_solar2
+    input_iva = 0.16*input_solar1 +  0.07*input_edificacion1
+
+    # CALCULAR TOTAL IVA (16% DEL SOLAR Y 7% DE LA EDIFICACIÓN)
+    # La evolución de la construcción afecta al siguiente periodo en edificación, crédito utilizado, intereses saldo vivo
+    # Unidades vendidas afecta al crédito utilizado, intereses saldo vivo (nos sirve solo las ventas)
+    #DISTRIBUCIÓN DE LOS PAGOS DE TESORERÍA 
+    mapping_values = {'input_ventas1': input_ventas1,
+            'total_solar': total_solar,
+            'total_edificacion': total_edificacion,
+            'input_admin1': input_admin1,
+            'input_admin2': input_admin2,
+            'input_iva': input_iva,
+            'input_fin1': input_fin1,
+            'input_fin2': input_fin2}
+    proportion_data["Nombre"] = proportion_data['Nombre'].replace(mapping_values)
+    # CREAR LISTA CON TODOS LOS TRIMESTRES (EN TOTAL 10, POR DEFECTO)
+    quarters = []
+    for i in range(max_trim):
+        quarters.append(add_quarters(start_date, i))
+    quarters.append("TOTAL")
+    # CREAMOS DATAFRAME AUXILIAR CON LA DISTRIBUCIÓN DE LOS PAGOS APLICADA
+    submit_reset = st.button(label="Valores predeterminados")
+    if submit_reset:
+        proportion_data_aux = proportion_data.copy()
+        for i in quarters[:-1]:
+            proportion_data_aux[i] = proportion_data_aux["Nombre"]*proportion_data_aux[i]
+        proportion_data_aux = proportion_data_aux.drop("Nombre", axis=1)
+        proportion_data_aux = proportion_data_aux.set_index("Tesorería") 
+        proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN'] = proportion_data_aux.loc['VENTAS'] + proportion_data_aux.loc['IVA VENTAS']  - proportion_data_aux.loc['SOLAR'] - proportion_data_aux.loc['EDIFICACIÓN'] - proportion_data_aux.loc['ADMINISTRACIÓN PROMOCIÓN'] - proportion_data_aux.loc['COMERCIALIZACIÓN DE LA PROMOCIÓN'] - proportion_data_aux.loc['IVA SOLAR'] 
+        cumulative_sum = proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN'].cumsum()
+        proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN ACUM'] = cumulative_sum
+        proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[2]] = (-proportion_data_aux.loc["CASH FLOW ANTES FINANCIACIÓN ACUM", proportion_data_aux.columns.to_list()[2]] + proportion_data_aux.loc["GASTOS DE CONSTITUCIÓN", proportion_data_aux.columns.to_list()[2]] - input_recursospropios)/(1- (input_tipodeinteres/100/4))
+        proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[2]] = (input_tipodeinteres/100/4)*proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[2]]
+        proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns.to_list()[2]] = proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[2]]
+        for i in [3,4,5]:
+            proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[i]] = (-proportion_data_aux.loc["CASH FLOW ANTES FINANCIACIÓN", proportion_data_aux.columns.to_list()[i]] + proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[i-1]])/(1- (input_tipodeinteres/100/4))
+            sliced_df = proportion_data_aux.loc['CREDITO UTILIZADO', :proportion_data_aux.columns[i]]
+            proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns[i]] = sliced_df.dropna().values.sum()
+            proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[i]] = (input_tipodeinteres/100/4)*proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[i]]
+        for i in [6,7,8,9]:
+            proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns[i]] = 0
+            proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[i]] = 0
+        proportion_data_aux.loc["DEVOLUCIONES DEL PRINCIPAL", proportion_data_aux.columns[6]] = 0.6*(proportion_data_aux.loc['VENTAS',:proportion_data_aux.columns[6]].dropna().values.sum())
+        for i in [7,8]:
+            proportion_data_aux.loc["DEVOLUCIONES DEL PRINCIPAL", proportion_data_aux.columns[i]] = 0.6*(proportion_data_aux.loc['VENTAS',proportion_data_aux.columns[i]])
+        for i in [6,7,8,9]:
+            proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns[i]] = proportion_data_aux.loc["DEVOLUCIONES DEL PRINCIPAL", proportion_data_aux.columns[i]] - proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns[i-1]]
+        proportion_data_aux = proportion_data_aux.fillna(0)
+        proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN"] =proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN'] + proportion_data_aux.loc['CREDITO UTILIZADO'] - proportion_data_aux.loc['GASTOS DE CONSTITUCIÓN'] - proportion_data_aux.loc['INTERESES SOBRE EL SALDO VIVO'] - proportion_data_aux.loc['DEVOLUCIONES DEL PRINCIPAL']
+        proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN ACUM"] = proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN"].cumsum()
+        conn.update(worksheet="Propuesta_din"+ selected_propuesta[-1], data=proportion_data_aux.reset_index())
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    dinamic_data = conn.read(worksheet="Propuesta_din"+ selected_propuesta[-1], usecols=list(range(12)), ttl=5).dropna(how="all")
     n_columns = st.columns(len(quarters)+1)
-    n_elements = existing_data["Tesorería"].tolist()
+    n_elements = dinamic_data["Tesorería"].tolist()
     analisis_din = pd.DataFrame(index=n_elements)
     for i, input_col in enumerate(n_columns):
         column_data = []
@@ -422,7 +513,7 @@ if selected == "Análisis dinámico":
                     if j == 0:
                         value = st.write(quarters[i - 1])
                     else:
-                        value = st.number_input("", value=existing_data.iloc[j-1,i], key=int(str(i) + str(j) + str(j+1)))
+                        value = st.number_input("", value=dinamic_data.iloc[j-1,i], key=int(str(i) + str(j) + str(j+1)))
                         column_data.append(value)
             analisis_din[str(quarters[i-1])] = column_data
     analisis_din = analisis_din.reset_index().rename(columns= {"index":"Tesorería"})
@@ -432,7 +523,6 @@ if selected == "Análisis dinámico":
     if submit_button:
         conn.update(worksheet="Propuesta_din"+ selected_propuesta[-1], data=analisis_din)
         st.success("¡Propuesta guardada!")
-    st.table(analisis_din)
 ################################# ANALISI DE MERCADO DATOS PÚBLICOS (AHC) #########################################################
 
 # @st.cache_resource
