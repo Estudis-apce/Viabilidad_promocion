@@ -35,8 +35,7 @@ st.subheader("**ESTUDIO DE VIABILIDAD DE UNA PROMOCIÓN**")
 
 selected = option_menu(
     menu_title=None,  # required
-    options=["Análisis de mercado","Análisis estático","Análisis dinámico"],  # Dropdown menu
-    # ["Análisis de mercado", "Edificabilidad","Análisis estático","Análisis dinámico", "Resumen de resultados"]
+    options=["Análisis de mercado", "Edificabilidad","Análisis estático","Análisis dinámico", "Resumen de resultados"],  # Dropdown menu
     icons=[None, None, None, None],  # Icons for dropdown menu
     menu_icon="cast",  # optional
     default_index=0,  # optional
@@ -178,30 +177,30 @@ if selected == "Análisis estático":
             # input_proporcioncompraplano = st.number_input("Proporción de compra sobre plano",  min_value=0.0, max_value=999999999.0, value=input_proporcioncompraplano, step=1000.0)
             st.write("")
             submit_reset = st.button(label="Valores predeterminados")
-        # if submit_reset:
-        #     input_ventas1 = input_preciom2*input_superficieconstruida
-        #     input_creditoconcedido = 0.6*input_ventas1
-        #     input_edificacion1= input_costem2construido*input_superficieconstruida
-        #     input_edificacion2 = 0.07*input_edificacion1
-        #     input_edificacion3 = 0.05*input_edificacion1
-        #     input_edificacion4 = 0.02*input_edificacion1
-        #     input_edificacion5 = 0.03*input_edificacion1
-        #     input_admin1 = 0.05*input_edificacion1
-        #     input_admin2 = 0.05*input_ventas1
-        #     input_solar1 = ((input_ventas1/1.2) - input_edificacion1 - input_edificacion2 - input_edificacion3 - input_edificacion4 - input_edificacion5 - input_admin1 - input_admin2)/1.03
-        #     input_solar2 = 0.03*input_solar1
-        #     total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
-        #     input_fin1 = input_creditoconcedido*0.11
-        #     input_fin2 = 0.01*input_creditoconcedido
-        #     result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
-        #     for variable_name in existing_data['Nombre']:
-        #         variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
-        #         result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
-        #     result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
-        #     conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
-        #     conn = st.connection("gsheets", type=GSheetsConnection)
-        #     existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
-        #     existing_data = existing_data.dropna(how="all")
+        if submit_reset:
+            input_ventas1 = input_preciom2*input_superficieconstruida
+            input_creditoconcedido = 0.6*input_ventas1
+            input_edificacion1= input_costem2construido*input_superficieconstruida
+            input_edificacion2 = 0.07*input_edificacion1
+            input_edificacion3 = 0.05*input_edificacion1
+            input_edificacion4 = 0.02*input_edificacion1
+            input_edificacion5 = 0.03*input_edificacion1
+            input_admin1 = 0.05*input_edificacion1
+            input_admin2 = 0.05*input_ventas1
+            input_solar1 = ((input_ventas1/1.2) - input_edificacion1 - input_edificacion2 - input_edificacion3 - input_edificacion4 - input_edificacion5 - input_admin1 - input_admin2)/1.03
+            input_solar2 = 0.03*input_solar1
+            total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
+            input_fin1 = input_creditoconcedido*0.11
+            input_fin2 = 0.01*input_creditoconcedido
+            result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
+            for variable_name in existing_data['Nombre']:
+                variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
+                result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
+            result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
+            conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
+            existing_data = existing_data.dropna(how="all")
         left, right= st.columns((1,1))
         with left:
             st.markdown('<h1 class="title-box">GASTOS</h1>', unsafe_allow_html=True)
@@ -285,7 +284,7 @@ if selected == "Análisis estático":
                 fig.update_layout(height=600, width=1500, paper_bgcolor="#edf1fc", plot_bgcolor='#edf1fc')
                 return fig
 
-            # st.plotly_chart(sorted_barplot_with_proportions(), use_container_width=True, responsive=True)
+            st.plotly_chart(sorted_barplot_with_proportions(), use_container_width=True, responsive=True)
         # with right:
         #     calcul_roe = round(((total_ingresos - total_gastos - total_fin)/input_recursospropios)*100, 1)
         #     calcul_roi = round(((total_ingresos - total_gastos)/total_gastos)*100, 1)
@@ -300,83 +299,83 @@ if selected == "Análisis estático":
         #                         yaxis_title='Porcentaje')
         #         return fig
         #     st.plotly_chart(barplot_ratios(), use_container_width=True, responsive=True)
-    # if selected_propuesta=="Comparativa":
-    #     num_propuesta_estatico = ["Propuesta_est1", "Propuesta_est2", "Propuesta_est3"]
-    #     propuesta_estatico_df = []
-    #     for i in num_propuesta_estatico:
-    #         conn = st.connection("gsheets", type=GSheetsConnection)
-    #         existing_data = conn.read(worksheet=i, usecols=list(range(3)), ttl=5)
-    #         existing_data = existing_data.dropna(how="all")
-    #         propuesta_estatico_df.append(existing_data)
-    #     # def bar_plotly(df, title_main, title_y):
-    #     #     fig = go.Figure()
-    #     #     fig.add_trace(go.Bar(
-    #     #         x=df["Elemento"],
-    #     #         y=df["Valor"],
-    #     #         name="m2",
-    #     #         text=df["Valor"],  # Use the "Valor" column for labels
-    #     #         textposition='auto'  # Position the labels automatically
-    #     #     ))
-    #     #     fig.update_layout(
-    #     #         title=title_main,
-    #     #         xaxis=dict(title=""),
-    #     #         yaxis=dict(title=title_y, tickformat=",d"),
-    #     #         paper_bgcolor="#edf1fc",
-    #     #         plot_bgcolor='#edf1fc'
-    #     #     )
-    #     #     return fig
-    #     def calculate_metrics(df):
-    #         total_gastos = df[df["Nombre"].isin(["input_solar1", "input_solar2", "input_solar3", "input_edificacion2", "input_edificacion3", "input_edificacion4", "input_edificacion5", "input_edificacion6", "input_com1", "input_admin1"])]["Valor"].sum()
-    #         total_fin = df[df["Nombre"].isin(["input_fin1", "input_fin2"])]["Valor"].sum()
-    #         total_ingresos = df[df["Nombre"]=="input_ventas1"]["Valor"].sum()
-    #         BAII_propuesta = total_ingresos - total_gastos #BAII
-    #         BAI_propuesta = total_ingresos - total_gastos - total_fin #BAI
-    #         return([total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta])
-    #     def bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta):
-    #         values = [total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta]
-    #         labels = ['Total Gastos', 'Total Gastos de Financiación', 'Total Ingresos', 'BAII', 'BAI']
-    #         bar_labels = [f"{value}€" for value in values]
-    #         fig = go.Figure([go.Bar(x=labels, y=values, text=bar_labels, textposition='auto')])
-    #         fig.update_layout(title='Resultado financiero',
-    #                         xaxis_title='',
-    #                         yaxis_title='€')
+    if selected_propuesta=="Comparativa":
+        num_propuesta_estatico = ["Propuesta_est1", "Propuesta_est2", "Propuesta_est3"]
+        propuesta_estatico_df = []
+        for i in num_propuesta_estatico:
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            existing_data = conn.read(worksheet=i, usecols=list(range(3)), ttl=5)
+            existing_data = existing_data.dropna(how="all")
+            propuesta_estatico_df.append(existing_data)
+        # def bar_plotly(df, title_main, title_y):
+        #     fig = go.Figure()
+        #     fig.add_trace(go.Bar(
+        #         x=df["Elemento"],
+        #         y=df["Valor"],
+        #         name="m2",
+        #         text=df["Valor"],  # Use the "Valor" column for labels
+        #         textposition='auto'  # Position the labels automatically
+        #     ))
+        #     fig.update_layout(
+        #         title=title_main,
+        #         xaxis=dict(title=""),
+        #         yaxis=dict(title=title_y, tickformat=",d"),
+        #         paper_bgcolor="#edf1fc",
+        #         plot_bgcolor='#edf1fc'
+        #     )
+        #     return fig
+        def calculate_metrics(df):
+            total_gastos = df[df["Nombre"].isin(["input_solar1", "input_solar2", "input_solar3", "input_edificacion2", "input_edificacion3", "input_edificacion4", "input_edificacion5", "input_edificacion6", "input_com1", "input_admin1"])]["Valor"].sum()
+            total_fin = df[df["Nombre"].isin(["input_fin1", "input_fin2"])]["Valor"].sum()
+            total_ingresos = df[df["Nombre"]=="input_ventas1"]["Valor"].sum()
+            BAII_propuesta = total_ingresos - total_gastos #BAII
+            BAI_propuesta = total_ingresos - total_gastos - total_fin #BAI
+            return([total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta])
+        def bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta):
+            values = [total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta]
+            labels = ['Total Gastos', 'Total Gastos de Financiación', 'Total Ingresos', 'BAII', 'BAI']
+            bar_labels = [f"{value}€" for value in values]
+            fig = go.Figure([go.Bar(x=labels, y=values, text=bar_labels, textposition='auto')])
+            fig.update_layout(title='Resultado financiero',
+                            xaxis_title='',
+                            yaxis_title='€')
             
-    #         return fig
+            return fig
 
-    #     left, center, right= st.columns((1,1,1))
-    #     with left:
-    #         propuesta1_est = propuesta_estatico_df[0]
-    #         st.markdown(f'<div class="custom-box">PROPUESTA 1</div>', unsafe_allow_html=True)   
-    #         # st.plotly_chart(bar_plotly(super_df, "Distribución de superficie en m2", "Superficie en m2"))
-    #         total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta1_est)
-    #         st.metric(label="**Total ingresos**", value=int(total_ingresos))
-    #         st.metric(label="**Total gastos**", value=int(total_gastos))
-    #         st.metric(label="**Total gastos de financiación**", value=int(total_fin))
-    #         st.metric(label="**BAII**", value=int(BAII_propuesta))
-    #         st.metric(label="**BAI**", value=int(BAI_propuesta))
-    #         st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta), use_container_width=True, responsive=True)
+        left, center, right= st.columns((1,1,1))
+        with left:
+            propuesta1_est = propuesta_estatico_df[0]
+            st.markdown(f'<div class="custom-box">PROPUESTA 1</div>', unsafe_allow_html=True)   
+            # st.plotly_chart(bar_plotly(super_df, "Distribución de superficie en m2", "Superficie en m2"))
+            total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta1_est)
+            st.metric(label="**Total ingresos**", value=int(total_ingresos))
+            st.metric(label="**Total gastos**", value=int(total_gastos))
+            st.metric(label="**Total gastos de financiación**", value=int(total_fin))
+            st.metric(label="**BAII**", value=int(BAII_propuesta))
+            st.metric(label="**BAI**", value=int(BAI_propuesta))
+            st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta), use_container_width=True, responsive=True)
 
-    #     with center:
-    #         propuesta2_est = propuesta_estatico_df[1]
-    #         st.markdown(f'<div class="custom-box">PROPUESTA 2</div>', unsafe_allow_html=True)   
-    #         total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta2_est)
-    #         st.metric(label="**Total ingresos**", value=int(total_ingresos))
-    #         st.metric(label="**Total gastos**", value=int(total_gastos))
-    #         st.metric(label="**Total gastos de financiación**", value=int(total_fin))
-    #         st.metric(label="**BAII**", value=int(BAII_propuesta))
-    #         st.metric(label="**BAI**", value=int(BAI_propuesta))
-    #         st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta), use_container_width=True, responsive=True)
+        with center:
+            propuesta2_est = propuesta_estatico_df[1]
+            st.markdown(f'<div class="custom-box">PROPUESTA 2</div>', unsafe_allow_html=True)   
+            total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta2_est)
+            st.metric(label="**Total ingresos**", value=int(total_ingresos))
+            st.metric(label="**Total gastos**", value=int(total_gastos))
+            st.metric(label="**Total gastos de financiación**", value=int(total_fin))
+            st.metric(label="**BAII**", value=int(BAII_propuesta))
+            st.metric(label="**BAI**", value=int(BAI_propuesta))
+            st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta), use_container_width=True, responsive=True)
 
-    #     with right:
-    #         propuesta3_est = propuesta_estatico_df[2]
-    #         st.markdown(f'<div class="custom-box">PROPUESTA 3</div>', unsafe_allow_html=True)   
-    #         total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta3_est)
-    #         st.metric(label="**Total ingresos**", value=int(total_ingresos))
-    #         st.metric(label="**Total gastos**", value=int(total_gastos))
-    #         st.metric(label="**Total gastos de financiación**", value=int(total_fin))
-    #         st.metric(label="**BAII**", value=int(BAII_propuesta))
-    #         st.metric(label="**BAI**", value=int(BAI_propuesta))
-    #         st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta), use_container_width=True, responsive=True)
+        with right:
+            propuesta3_est = propuesta_estatico_df[2]
+            st.markdown(f'<div class="custom-box">PROPUESTA 3</div>', unsafe_allow_html=True)   
+            total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta3_est)
+            st.metric(label="**Total ingresos**", value=int(total_ingresos))
+            st.metric(label="**Total gastos**", value=int(total_gastos))
+            st.metric(label="**Total gastos de financiación**", value=int(total_fin))
+            st.metric(label="**BAII**", value=int(BAII_propuesta))
+            st.metric(label="**BAI**", value=int(BAI_propuesta))
+            st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta), use_container_width=True, responsive=True)
 
 
 if selected == "Análisis dinámico":
@@ -404,62 +403,63 @@ if selected == "Análisis dinámico":
     with right:
         selected_propuesta = st.radio("", ("Propuesta 1", "Propuesta 2", "Propuesta 3"), horizontal=True)
     # IMPORT DATA FROM GOOGLE SHEET
-    # conn = st.connection("gsheets", type=GSheetsConnection)
-    # proportion_data = conn.read(worksheet="Propuesta_din_perc", usecols=list(range(12)), ttl=5).dropna(how="all")
-    # display_proportion = proportion_data.iloc[:2,:].drop("Nombre", axis=1)
-    # quarters = []
-    # for i in range(max_trim):
-    #     quarters.append(add_quarters(start_date, i))
-    # quarters.append("TOTAL")
-    # n_columns = st.columns(len(quarters))
-    # n_elements = display_proportion["Tesorería"].tolist()
-    # analisis_prop = pd.DataFrame(index=n_elements)
-    # for i, input_col in enumerate(n_columns):
-    #     column_data = []
-    #     with input_col:
-    #         if i == 0:
-    #             for j, element in enumerate(n_elements):
-    #                 value= st.text_input("", element, key=j*1000+10000000000)
-    #                 column_data.append(value)
-    #         else:
-    #             for j in range(len(n_elements)+1):
-    #                 if j == 0:
-    #                     value = st.write(quarters[i - 1])
-    #                 else:
-    #                     value = st.number_input("", value=display_proportion.iloc[j-1,i], key=int(str(i+1000) + str(j+1000) + str(j+10001)))
-    #                     column_data.append(value)
-    #         analisis_prop[str(quarters[i-1])] = column_data
-    # submit_button_prop = st.button(label="Guardar evolución")
-    # if submit_button_prop:
-    #     conn.update(worksheet="Propuesta_din_perc", data=analisis_prop)
-    #     st.success("¡Perfil de evolución guardada!")
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    proportion_data = conn.read(worksheet="Propuesta_din_perc", usecols=list(range(12)), ttl=5).dropna(how="all")
+    display_proportion = proportion_data.iloc[:2,:].drop("Nombre", axis=1)
+    st.table(display_proportion)
+    quarters = []
+    for i in range(max_trim):
+        quarters.append(add_quarters(start_date, i))
+    quarters.append("TOTAL")
+    n_columns = st.columns(len(quarters))
+    n_elements = display_proportion["Tesorería"].tolist()
+    analisis_prop = pd.DataFrame(index=n_elements)
+    for i, input_col in enumerate(n_columns):
+        column_data = []
+        with input_col:
+            if i == 0:
+                for j, element in enumerate(n_elements):
+                    value= st.text_input("", element, key=j*1000+10000000000)
+                    column_data.append(value)
+            else:
+                for j in range(len(n_elements)+1):
+                    if j == 0:
+                        value = st.write(quarters[i - 1])
+                    else:
+                        value = st.number_input("", value=display_proportion.iloc[j-1,i], key=int(str(i+1000) + str(j+1000) + str(j+10001)))
+                        column_data.append(value)
+            analisis_prop[str(quarters[i-1])] = column_data
+    submit_button_prop = st.button(label="Guardar evolución")
+    if submit_button_prop:
+        conn.update(worksheet="Propuesta_din_perc", data=analisis_prop)
+        st.success("¡Perfil de evolución guardada!")
 
 
-    # proportion_data = proportion_data[~proportion_data["Nombre"].isna()]
-    # estatic_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5).dropna(how="all")
-    # dinamic_data = conn.read(worksheet="Propuesta_din"+ selected_propuesta[-1], usecols=list(range(12)), ttl=5).dropna(how="all")
-    # for index, row in estatic_data.iterrows():
-    #     variable_name = row['Nombre']
-    #     variable_value = (row['Valor'])
-    #     exec(f"{variable_name} = {variable_value}")
-    # total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
-    # total_edificacion = input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5
-    # total_solar = input_solar1 + input_solar2
-    # input_iva = 0.16*input_solar1 +  0.07*input_edificacion1
+    proportion_data = proportion_data[~proportion_data["Nombre"].isna()]
+    estatic_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5).dropna(how="all")
+    dinamic_data = conn.read(worksheet="Propuesta_din"+ selected_propuesta[-1], usecols=list(range(12)), ttl=5).dropna(how="all")
+    for index, row in estatic_data.iterrows():
+        variable_name = row['Nombre']
+        variable_value = (row['Valor'])
+        exec(f"{variable_name} = {variable_value}")
+    total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
+    total_edificacion = input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5
+    total_solar = input_solar1 + input_solar2
+    input_iva = 0.16*input_solar1 +  0.07*input_edificacion1
 
-    # # CALCULAR TOTAL IVA (16% DEL SOLAR Y 7% DE LA EDIFICACIÓN)
-    # # La evolución de la construcción afecta al siguiente periodo en edificación, crédito utilizado, intereses saldo vivo
-    # # Unidades vendidas afecta al crédito utilizado, intereses saldo vivo (nos sirve solo las ventas)
-    # #DISTRIBUCIÓN DE LOS PAGOS DE TESORERÍA 
-    # mapping_values = {'input_ventas1': input_ventas1,
-    #         'total_solar': total_solar,
-    #         'total_edificacion': total_edificacion,
-    #         'input_admin1': input_admin1,
-    #         'input_admin2': input_admin2,
-    #         'input_iva': input_iva,
-    #         'input_fin1': input_fin1,
-    #         'input_fin2': input_fin2}
-    # proportion_data["Nombre"] = proportion_data['Nombre'].replace(mapping_values)
+    # CALCULAR TOTAL IVA (16% DEL SOLAR Y 7% DE LA EDIFICACIÓN)
+    # La evolución de la construcción afecta al siguiente periodo en edificación, crédito utilizado, intereses saldo vivo
+    # Unidades vendidas afecta al crédito utilizado, intereses saldo vivo (nos sirve solo las ventas)
+    #DISTRIBUCIÓN DE LOS PAGOS DE TESORERÍA 
+    mapping_values = {'input_ventas1': input_ventas1,
+            'total_solar': total_solar,
+            'total_edificacion': total_edificacion,
+            'input_admin1': input_admin1,
+            'input_admin2': input_admin2,
+            'input_iva': input_iva,
+            'input_fin1': input_fin1,
+            'input_fin2': input_fin2}
+    proportion_data["Nombre"] = proportion_data['Nombre'].replace(mapping_values)
     # CREAR LISTA CON TODOS LOS TRIMESTRES (EN TOTAL 10, POR DEFECTO)
     quarters = []
     for i in range(max_trim):
@@ -467,35 +467,35 @@ if selected == "Análisis dinámico":
     quarters.append("TOTAL")
     # CREAMOS DATAFRAME AUXILIAR CON LA DISTRIBUCIÓN DE LOS PAGOS APLICADA
     submit_reset = st.button(label="Valores predeterminados")
-    # if submit_reset:
-    #     proportion_data_aux = proportion_data.copy()
-    #     for i in quarters[:-1]:
-    #         proportion_data_aux[i] = proportion_data_aux["Nombre"]*proportion_data_aux[i]
-    #     proportion_data_aux = proportion_data_aux.drop("Nombre", axis=1)
-    #     proportion_data_aux = proportion_data_aux.set_index("Tesorería") 
-    #     proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN'] = proportion_data_aux.loc['VENTAS'] + proportion_data_aux.loc['IVA VENTAS']  - proportion_data_aux.loc['SOLAR'] - proportion_data_aux.loc['EDIFICACIÓN'] - proportion_data_aux.loc['ADMINISTRACIÓN PROMOCIÓN'] - proportion_data_aux.loc['COMERCIALIZACIÓN DE LA PROMOCIÓN'] - proportion_data_aux.loc['IVA SOLAR'] 
-    #     cumulative_sum = proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN'].cumsum()
-    #     proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN ACUM'] = cumulative_sum
-    #     proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[2]] = (-proportion_data_aux.loc["CASH FLOW ANTES FINANCIACIÓN ACUM", proportion_data_aux.columns.to_list()[2]] + proportion_data_aux.loc["GASTOS DE CONSTITUCIÓN", proportion_data_aux.columns.to_list()[2]] - input_recursospropios)/(1- (input_tipodeinteres/100/4))
-    #     proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[2]] = (input_tipodeinteres/100/4)*proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[2]]
-    #     proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns.to_list()[2]] = proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[2]]
-    #     for i in [3,4,5]:
-    #         proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[i]] = (-proportion_data_aux.loc["CASH FLOW ANTES FINANCIACIÓN", proportion_data_aux.columns.to_list()[i]] + proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[i-1]])/(1- (input_tipodeinteres/100/4))
-    #         sliced_df = proportion_data_aux.loc['CREDITO UTILIZADO', :proportion_data_aux.columns[i]]
-    #         proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns[i]] = sliced_df.dropna().values.sum()
-    #         proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[i]] = (input_tipodeinteres/100/4)*proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[i]]
-    #     for i in [6,7,8,9]:
-    #         proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns[i]] = 0
-    #         proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[i]] = 0
-    #     proportion_data_aux.loc["DEVOLUCIONES DEL PRINCIPAL", proportion_data_aux.columns[6]] = 0.6*(proportion_data_aux.loc['VENTAS',:proportion_data_aux.columns[6]].dropna().values.sum())
-    #     for i in [7,8]:
-    #         proportion_data_aux.loc["DEVOLUCIONES DEL PRINCIPAL", proportion_data_aux.columns[i]] = 0.6*(proportion_data_aux.loc['VENTAS',proportion_data_aux.columns[i]])
-    #     for i in [6,7,8,9]:
-    #         proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns[i]] = proportion_data_aux.loc["DEVOLUCIONES DEL PRINCIPAL", proportion_data_aux.columns[i]] - proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns[i-1]]
-    #     proportion_data_aux = proportion_data_aux.fillna(0)
-    #     proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN"] =proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN'] + proportion_data_aux.loc['CREDITO UTILIZADO'] - proportion_data_aux.loc['GASTOS DE CONSTITUCIÓN'] - proportion_data_aux.loc['INTERESES SOBRE EL SALDO VIVO'] - proportion_data_aux.loc['DEVOLUCIONES DEL PRINCIPAL']
-    #     proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN ACUM"] = proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN"].cumsum()
-    #     conn.update(worksheet="Propuesta_din"+ selected_propuesta[-1], data=proportion_data_aux.reset_index())
+    if submit_reset:
+        proportion_data_aux = proportion_data.copy()
+        for i in quarters[:-1]:
+            proportion_data_aux[i] = proportion_data_aux["Nombre"]*proportion_data_aux[i]
+        proportion_data_aux = proportion_data_aux.drop("Nombre", axis=1)
+        proportion_data_aux = proportion_data_aux.set_index("Tesorería") 
+        proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN'] = proportion_data_aux.loc['VENTAS'] + proportion_data_aux.loc['IVA VENTAS']  - proportion_data_aux.loc['SOLAR'] - proportion_data_aux.loc['EDIFICACIÓN'] - proportion_data_aux.loc['ADMINISTRACIÓN PROMOCIÓN'] - proportion_data_aux.loc['COMERCIALIZACIÓN DE LA PROMOCIÓN'] - proportion_data_aux.loc['IVA SOLAR'] 
+        cumulative_sum = proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN'].cumsum()
+        proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN ACUM'] = cumulative_sum
+        proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[2]] = (-proportion_data_aux.loc["CASH FLOW ANTES FINANCIACIÓN ACUM", proportion_data_aux.columns.to_list()[2]] + proportion_data_aux.loc["GASTOS DE CONSTITUCIÓN", proportion_data_aux.columns.to_list()[2]] - input_recursospropios)/(1- (input_tipodeinteres/100/4))
+        proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[2]] = (input_tipodeinteres/100/4)*proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[2]]
+        proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns.to_list()[2]] = proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[2]]
+        for i in [3,4,5]:
+            proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[i]] = (-proportion_data_aux.loc["CASH FLOW ANTES FINANCIACIÓN", proportion_data_aux.columns.to_list()[i]] + proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[i-1]])/(1- (input_tipodeinteres/100/4))
+            sliced_df = proportion_data_aux.loc['CREDITO UTILIZADO', :proportion_data_aux.columns[i]]
+            proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns[i]] = sliced_df.dropna().values.sum()
+            proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[i]] = (input_tipodeinteres/100/4)*proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns.to_list()[i]]
+        for i in [6,7,8,9]:
+            proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns[i]] = 0
+            proportion_data_aux.loc["INTERESES SOBRE EL SALDO VIVO", proportion_data_aux.columns.to_list()[i]] = 0
+        proportion_data_aux.loc["DEVOLUCIONES DEL PRINCIPAL", proportion_data_aux.columns[6]] = 0.6*(proportion_data_aux.loc['VENTAS',:proportion_data_aux.columns[6]].dropna().values.sum())
+        for i in [7,8]:
+            proportion_data_aux.loc["DEVOLUCIONES DEL PRINCIPAL", proportion_data_aux.columns[i]] = 0.6*(proportion_data_aux.loc['VENTAS',proportion_data_aux.columns[i]])
+        for i in [6,7,8,9]:
+            proportion_data_aux.loc["CREDITO UTILIZADO", proportion_data_aux.columns[i]] = proportion_data_aux.loc["DEVOLUCIONES DEL PRINCIPAL", proportion_data_aux.columns[i]] - proportion_data_aux.loc["SALDO VIVO DEL CRÉDITO", proportion_data_aux.columns[i-1]]
+        proportion_data_aux = proportion_data_aux.fillna(0)
+        proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN"] =proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN'] + proportion_data_aux.loc['CREDITO UTILIZADO'] - proportion_data_aux.loc['GASTOS DE CONSTITUCIÓN'] - proportion_data_aux.loc['INTERESES SOBRE EL SALDO VIVO'] - proportion_data_aux.loc['DEVOLUCIONES DEL PRINCIPAL']
+        proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN ACUM"] = proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN"].cumsum()
+        conn.update(worksheet="Propuesta_din"+ selected_propuesta[-1], data=proportion_data_aux.reset_index())
     conn = st.connection("gsheets", type=GSheetsConnection)
     dinamic_data = conn.read(worksheet="Propuesta_din"+ selected_propuesta[-1], usecols=list(range(12)), ttl=5).dropna(how="all")
     n_columns = st.columns(len(quarters)+1)
@@ -925,8 +925,7 @@ if selected=="Análisis de mercado":
             index_names = ["Preus", "Superfície", "Producció", "Compravendes"]
             selected_index = st.selectbox("**Selecciona un indicador:**", index_names)
         if selected_option!="Provincias":
-            index_names_mun = ["Preus", "Superfície", "Producció", "Compravendes"]
-            # index_names_mun = ["Preus", "Superfície", "Producció", "Compravendes", "Definición de producto"]
+            index_names_mun = ["Preus", "Superfície", "Producció", "Compravendes", "Definición de producto"]
             selected_index = st.selectbox("**Selecciona un indicador:**", index_names_mun)
     with center_aux:
         if selected_option=="Provincias":
