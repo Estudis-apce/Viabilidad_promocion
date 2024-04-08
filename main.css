@@ -41,8 +41,8 @@ p, ul, li{
 }
 
 .button, .button:link, .button:visited, .download-button {
-  font-size: 20px;
   background-color: #ADD8E6;
+  font-size: 20px;
   color: white;
   padding: 14px 25px;
   text-align: center;
@@ -83,6 +83,17 @@ p, ul, li{
   text-align: center;
   color: grey;
 }
+
+.title-box-error {
+  border: 2px solid darkred;
+  background-color: darkred;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 30px 10px 30px;
+  color: white;
+  font-weight: bold;
+}
+
 table {
   border-collapse: collapse;
   margin: 5px auto;
@@ -174,6 +185,78 @@ header {visibility: hidden;}
   margin: 10px 30px 10px 30px;
   color: black;
   font-weight: bold;
+}
+
+.custom-box-propuesta1 {
+  border: 2px solid #deffa0;
+  background-color: #deffa0;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 30px 10px 30px;
+  color: black;
+  font-weight: bold;
+}
+
+.custom-box-propuesta2 {
+  border: 2px solid #9EA1D4;
+  background-color: #9EA1D4;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 30px 10px 30px;
+  color: black;
+  font-weight: bold;
+}
+
+.custom-box-propuesta3 {
+  border: 2px solid #F6B974;
+  background-color: #F6B974;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 30px 10px 30px;
+  color: black;
+  font-weight: bold;
+}
+
+.button-propuesta1 {
+  border: 2px solid #deffa0;
+  background-color: #deffa0;
+  font-size: 15px;
+  color: black;
+  font-weight: bold;
+  padding: 14px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  border: none;
+  border-radius: 4px;
+}
+
+.button-propuesta2 {
+  border: 2px solid #9EA1D4;
+  background-color: #9EA1D4;
+  font-size: 15px;
+  color: black;
+  font-weight: bold;
+  padding: 14px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  border: none;
+  border-radius: 4px;
+}
+
+.button-propuesta3 {
+  border: 2px solid #F6B974;
+  background-color: #F6B974;
+  font-size: 15px;
+  color: black;
+  font-weight: bold;
+  padding: 14px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  border: none;
+  border-radius: 4px;
 }
 
 div[data-testid="stMetric"] {
