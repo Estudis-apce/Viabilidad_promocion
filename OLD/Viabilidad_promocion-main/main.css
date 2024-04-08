@@ -1,0 +1,324 @@
+/* [data-testid="stSidebar"][aria-expanded="true"]{
+  min-width: 17vw;
+  max-width: 17vw;
+} */
+[data-testid= "stAppViewContainer"]{
+  background-color: #edf1fc;
+}
+
+
+button.step-up {display: none;}
+button.step-down {display: none;}
+div[data-baseweb] {border-radius: 4px;}
+
+body {
+  text-align: center;
+  width: 100%;
+}
+
+h1, h2 {
+  color: #333;
+  text-align: left;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+h2 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+p, ul, li{
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.button, .button:link, .button:visited, .download-button {
+  background-color: #ADD8E6;
+  font-size: 20px;
+  color: white;
+  padding: 14px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  border: none;
+  border-radius: 4px;
+  /* -webkit-animation: bounce 2s infinite alternate;
+  -moz-animation: bounce 2s infinite alternate;
+  animation: bounce 2s infinite alternate; */
+}
+
+.title-box {
+  border: 2px solid #A45A52;
+  border-radius: 5px;
+  padding: 10px;
+  text-align: center;
+  color: #A45A52;
+}
+.title-box-ing {
+  border: 2px solid #4682B4;
+  border-radius: 5px;
+  padding: 10px;
+  text-align: center;
+  color: #4682B4;
+}
+.title-box-fin {
+  border: 2px solid #c9b00e;
+  border-radius: 5px;
+  padding: 10px;
+  text-align: center;
+  color: #c9b00e;
+}
+.title-box-res {
+  border: 2px solid grey;
+  border-radius: 5px;
+  padding: 10px;
+  text-align: center;
+  color: grey;
+}
+
+.title-box-error {
+  border: 2px solid darkred;
+  background-color: darkred;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 30px 10px 30px;
+  color: white;
+  font-weight: bold;
+}
+
+table {
+  border-collapse: collapse;
+  margin: 5px auto;
+  font-size: 0.75em;
+  font-family: sans-serif;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+table thead th {
+  background-color: #ADD8E6;
+  color: black;
+  text-align: center;
+}
+
+table tbody tr:nth-of-type(even) {
+  background-color: #ADD8E6;
+}
+
+table tbody tr:last-of-type {
+  border-bottom: 2px solid #ADD8E6;
+}
+
+table tbody td {
+  padding: 12px 15px;
+}
+
+
+
+@-webkit-keyframes bounce {
+  to { -webkit-transform: scale(1.1); }
+}
+@-moz-keyframes bounce {
+  to { -moz-transform: scale(1.1); }
+}
+@keyframes bounce {
+  to { transform: scale(1.1); }
+}
+
+.button:hover, .button:active {
+  background-color: #ADD8E6;
+}
+
+/* Style inputs with type="text", type="email"and textareas */
+.Contacte, input[type=email], textarea {
+  width: 100%; /* Full width */
+  padding: 8px; /* Some padding */ 
+  border-radius: 4px; /* Rounded borders */
+  box-sizing: border-box; /* Make sure that padding and width stays in place */
+  margin-bottom: 16px; /* Bottom margin */
+  resize: vertical; /* Allow the user to vertically resize the textarea (not horizontally) */
+  color:white;
+  border-color: white;
+  background-color: #ADD8E6; /* Set background color to white */
+}
+
+input[type=text]::placeholder,
+input[type=email]::placeholder,
+textarea::placeholder {
+  color: white; /* Set font color to white */
+}
+
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+
+
+.reportview-container .main .block-container{
+        max-width: {percentage_width_main}%;
+        padding-top: {1}rem;
+        padding-right: {1}rem;
+        padding-left: {1}rem;
+        padding-bottom: {1}rem;
+    }
+
+.uploadedFile {display: none}
+.footer {visibility: hidden;}
+
+* {
+  font-family: "Arial", sans-serif;
+}
+
+.custom-box {
+  border: 2px solid #ADD8E6;
+  background-color: #ADD8E6;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 30px 10px 30px;
+  color: black;
+  font-weight: bold;
+}
+
+.custom-box-propuesta1 {
+  border: 2px solid #deffa0;
+  background-color: #deffa0;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 30px 10px 30px;
+  color: black;
+  font-weight: bold;
+}
+
+.custom-box-propuesta2 {
+  border: 2px solid #9EA1D4;
+  background-color: #9EA1D4;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 30px 10px 30px;
+  color: black;
+  font-weight: bold;
+}
+
+.custom-box-propuesta3 {
+  border: 2px solid #F6B974;
+  background-color: #F6B974;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 30px 10px 30px;
+  color: black;
+  font-weight: bold;
+}
+
+.button-propuesta1 {
+  border: 2px solid #deffa0;
+  background-color: #deffa0;
+  font-size: 15px;
+  color: black;
+  font-weight: bold;
+  padding: 14px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  border: none;
+  border-radius: 4px;
+}
+
+.button-propuesta2 {
+  border: 2px solid #9EA1D4;
+  background-color: #9EA1D4;
+  font-size: 15px;
+  color: black;
+  font-weight: bold;
+  padding: 14px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  border: none;
+  border-radius: 4px;
+}
+
+.button-propuesta3 {
+  border: 2px solid #F6B974;
+  background-color: #F6B974;
+  font-size: 15px;
+  color: black;
+  font-weight: bold;
+  padding: 14px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  border: none;
+  border-radius: 4px;
+}
+
+div[data-testid="stMetric"] {
+  background-color: #ADD8E6;
+  border: 1px solid #ADD8E6;
+  padding: 0.3% 1% 0.3% 1%;
+  margin: 0px 30px 0px 30px;
+  border-radius: 5px;
+  color: #ADD8E6;
+  overflow-wrap: break-word;
+}
+
+[data-testid="stMetric"] {
+  height: fit-content;
+  margin: auto;
+  overflow: visible;
+}
+
+[data-testid="stMetric"] > div {
+  width: fit-content;
+  margin: auto;
+  overflow: visible;
+}
+
+[data-testid="stMetric"] label {
+  width: fit-content;
+  margin: 5px auto;
+  overflow: visible;
+}
+[data-testid="textInputRootElement"] {
+  height: fit-content;
+  width: 90vw;
+}
+
+
+div[data-testid="stMetric"] {
+  color: black;
+  overflow-wrap: break-word;
+  overflow: visible;
+}
+
+div[data-testid="stMetric"] > label[data-testid="stMetricLabel"] > div {
+  overflow-wrap: break-word;
+  white-space: break-spaces;
+  color: black;
+  overflow: visible;
+}
+.download-button {
+  background-color: #ADD8E6; /* Red background */
+  color: black; /* White text */
+  border: none; /* No border */
+  padding: 12px 24px; /* Padding around text */
+  font-size: 16px; /* Text size */
+  font-weight: bold; /* Bold text */
+  border-radius: 4px; /* Rounded corners */
+  transition: all 0.3s ease; /* Smooth transition on hover */
+}
+
+.download-button:hover {
+  background-color: #ADD8E6; /* Darker red background on hover */
+  cursor: pointer; /* Change cursor to hand on hover */
+}
+.stMultiSelect [data-baseweb=select] span{
+  max-width: 500px;
+}

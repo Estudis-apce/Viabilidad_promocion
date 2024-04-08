@@ -1,0 +1,22 @@
+credentials:
+  usernames:
+    Ruben:
+      email: estudisapcecat@gmail.com
+      failed_login_attempts: 0 # Will be managed automatically
+      logged_in: False # Will be managed automatically
+      name: Rubén López
+      password: $2b$12$M.0mXHXD9fq4n7YlWo21eeyWyeauF4D/2njSrG2wcRWFWEZfGsDNm # Will be hashed automatically
+    Rosa:
+      email: rosacullell@gmail.com
+      failed_login_attempts: 0 # Will be managed automatically
+      logged_in: False # Will be managed automatically
+      name: Rosa Cullell
+      password: $2b$12$M.0mXHXD9fq4n7YlWo21eeyWyeauF4D/2njSrG2wcRWFWEZfGsDNm # Will be hashed automatically
+cookie:
+  expiry_days: 30
+  key: abc # Must be string
+  name: abc
+pre-authorized:
+  emails:
+  - estudisapcecat@gmail.com
+  - rosacullell@gmail.com
