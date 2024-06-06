@@ -6,7 +6,7 @@ credentials:
   usernames:
     rosa:
       email: rosacullell@gmail.com
-      failed_login_attempts: 1
+      failed_login_attempts: 0
       logged_in: true
       name: Rosa Cullell
       password: $2b$12$M.0mXHXD9fq4n7YlWo21eeyWyeauF4D/2njSrG2wcRWFWEZfGsDNm

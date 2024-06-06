@@ -10,3 +10,4 @@ streamlit<=1.31.0
 streamlit-authenticator==0.2.1
 streamlit-option-menu==0.3.2
 geopandas==0.12.2
+numpy-financial==1.0.0
