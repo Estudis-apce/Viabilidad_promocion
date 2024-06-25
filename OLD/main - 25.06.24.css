@@ -23,9 +23,6 @@ body {
 * {
   font-family: "Arial", sans-serif;
 }
-h1, h2 {
-  font-size: 1.5em;
-}
 
 p, ul, li{
   font-size: 1em;
@@ -55,8 +52,6 @@ p, ul, li{
   padding: 10px;
   text-align: center;
   color: #A45A52;
-  font-size: 1.2em;
-  margin-bottom: 10px;
 }
 .title-box-ing {
   border: 2px solid #4682B4;
@@ -64,8 +59,6 @@ p, ul, li{
   padding: 10px;
   text-align: center;
   color: #4682B4;
-  font-size: 1.2em;
-  margin-bottom: 10px;
 }
 .title-box-fin {
   border: 2px solid #c9b00e;
@@ -73,8 +66,6 @@ p, ul, li{
   padding: 10px;
   text-align: center;
   color: #c9b00e;
-  font-size: 1.2em;
-  margin-bottom: 10px;
 }
 .title-box-res {
   border: 2px solid grey;
@@ -82,8 +73,6 @@ p, ul, li{
   padding: 10px;
   text-align: center;
   color: grey;
-  font-size: 1.2em;
-  margin-bottom: 10px;
 }
 
 .title-box-error {
@@ -94,8 +83,6 @@ p, ul, li{
   margin: 10px 30px 10px 30px;
   color: white;
   font-weight: bold;
-  font-size: 1.2em;
-  margin-bottom: 10px;
 }
 
 table {
