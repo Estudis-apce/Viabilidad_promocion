@@ -283,10 +283,10 @@ if selected=="Edificabilidad":
         propuesta1_edifi = propuesta_edifi_df[0]
         st.markdown(f'<div class="custom-box-propuesta1">PROPUESTA 1</div>', unsafe_allow_html=True)
         st.metric(label="**Número de viviendas**", value=f"""{int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="num_viviendas"]["Valor"]):,.0f}""")
-        st.metric(label="**Superficie de viviendas**", value=f"""{int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="super_viviendas"]["Valor"]):,.0f}""")
-        st.metric(label="**Coste de construcción sobre rasante**", value=f"""{int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="coste_sobrerasante"]["Valor"]):,.0f}""")
-        st.metric(label="**Coste de construcción bajo rasante**", value=f"""{int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="coste_bajorasante"]["Valor"]):,.0f}""")
-        super1_df = propuesta1_edifi[(propuesta1_edifi['Nombre'].str.startswith('super')) & (propuesta1_edifi['Nombre']!="super_viviendas")].drop("Nombre", axis=1)
+        st.metric(label="**Superficie de viviendas**", value=f"""{int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="super_viviendas"]["Valor"].values + propuesta1_edifi[propuesta1_edifi["Nombre"]=="super_comunicaciones"]["Valor"].values):,.0f}""")
+        st.metric(label="**Superficie comercial**", value=f"""{int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="super_comercial"]["Valor"]):,.0f}""")
+        st.metric(label="**Superficie de parking**", value=f"""{int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="super_parking"]["Valor"]):,.0f}""")
+        super1_df = propuesta1_edifi[(propuesta1_edifi['Nombre'].str.startswith('super')) & (~propuesta1_edifi['Nombre'].isin(["super_viviendas", "super_parcela", "super_ocupaciontotal", "super_ocupacionsr", "super_viviendas"]))].drop("Nombre", axis=1)
         mix_viviendas1_df = propuesta1_edifi[(propuesta1_edifi['Nombre'].str.startswith('num_')) & (propuesta1_edifi['Nombre']!="num_viviendas")].drop("Nombre", axis=1)
         # super_df["Valor"] = round(super_df["Valor"],1)
         st.markdown(f"""<a href="https://google.com" target="_blank"><button class="button-propuesta1">Ver propuesta gráfica</button></a>""", unsafe_allow_html=True)
@@ -294,10 +294,10 @@ if selected=="Edificabilidad":
         propuesta2_edifi = propuesta_edifi_df[1]
         st.markdown(f'<div class="custom-box-propuesta2">PROPUESTA 2</div>', unsafe_allow_html=True)   
         st.metric(label="**Número de viviendas**", value=f"""{int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="num_viviendas"]["Valor"]):,.0f}""")
-        st.metric(label="**Superficie de viviendas**", value=f"""{int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="super_viviendas"]["Valor"]):,.0f}""")
-        st.metric(label="**Coste de construcción sobre rasante**", value=f"""{int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="coste_sobrerasante"]["Valor"]):,.0f}""")
-        st.metric(label="**Coste de construcción bajo rasante**", value=f"""{int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="coste_bajorasante"]["Valor"]):,.0f}""")
-        super2_df = propuesta2_edifi[(propuesta2_edifi['Nombre'].str.startswith('super')) & (propuesta2_edifi['Nombre']!="super_viviendas")].drop("Nombre", axis=1)
+        st.metric(label="**Superficie de viviendas**", value=f"""{int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="super_viviendas"]["Valor"].values + propuesta2_edifi[propuesta2_edifi["Nombre"]=="super_comunicaciones"]["Valor"].values):,.0f}""")
+        st.metric(label="**Superficie comercial**", value=f"""{int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="super_comercial"]["Valor"]):,.0f}""")
+        st.metric(label="**Superficie de parking**", value=f"""{int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="super_parking"]["Valor"]):,.0f}""")
+        super2_df = propuesta2_edifi[(propuesta2_edifi['Nombre'].str.startswith('super')) & (~propuesta2_edifi['Nombre'].isin(["super_viviendas", "super_parcela", "super_ocupaciontotal", "super_ocupacionsr", "super_viviendas"]))].drop("Nombre", axis=1)
         mix_viviendas2_df = propuesta2_edifi[(propuesta2_edifi['Nombre'].str.startswith('num_')) & (propuesta2_edifi['Nombre']!="num_viviendas")].drop("Nombre", axis=1)
         # super_df["Valor"] = round(super_df["Valor"],1)
         st.markdown(f"""<a href="https://google.com" target="_blank"><button class="button-propuesta2">Ver propuesta gráfica</button></a>""", unsafe_allow_html=True)
@@ -305,10 +305,10 @@ if selected=="Edificabilidad":
         propuesta3_edifi = propuesta_edifi_df[2]
         st.markdown(f'<div class="custom-box-propuesta3">PROPUESTA 3</div>', unsafe_allow_html=True)   
         st.metric(label="**Número de viviendas**", value=f"""{int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="num_viviendas"]["Valor"]):,.0f}""")
-        st.metric(label="**Superficie de viviendas**", value=f"""{int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="super_viviendas"]["Valor"]):,.0f}""")
-        st.metric(label="**Coste de construcción sobre rasante**", value=f"""{int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="coste_sobrerasante"]["Valor"]):,.0f}""")
-        st.metric(label="**Coste de construcción bajo rasante**", value=f"""{int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="coste_bajorasante"]["Valor"]):,.0f}""")
-        super3_df = propuesta3_edifi[(propuesta3_edifi['Nombre'].str.startswith('super')) & (propuesta3_edifi['Nombre']!="super_viviendas")].drop("Nombre", axis=1)
+        st.metric(label="**Superficie de viviendas**", value=f"""{int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="super_viviendas"]["Valor"].values + propuesta3_edifi[propuesta3_edifi["Nombre"]=="super_comunicaciones"]["Valor"].values):,.0f}""")
+        st.metric(label="**Superficie comercial**", value=f"""{int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="super_comercial"]["Valor"]):,.0f}""")
+        st.metric(label="**Superficie de parking**", value=f"""{int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="super_parking"]["Valor"]):,.0f}""")
+        super3_df = propuesta3_edifi[(propuesta3_edifi['Nombre'].str.startswith('super')) & (~propuesta3_edifi['Nombre'].isin(["super_viviendas", "super_parcela", "super_ocupaciontotal", "super_ocupacionsr", "super_viviendas"]))].drop("Nombre", axis=1)
         mix_viviendas3_df = propuesta3_edifi[(propuesta3_edifi['Nombre'].str.startswith('num_')) & (propuesta3_edifi['Nombre']!="num_viviendas")].drop("Nombre", axis=1)
         # super_df["Valor"] = round(super_df["Valor"],1)
         st.markdown(f"""<a href="https://google.com" target="_blank"><button class="button-propuesta3">Ver propuesta gráfica</button></a>""", unsafe_allow_html=True)
@@ -366,6 +366,7 @@ if selected == "Análisis estático":
         input_preciom2 = int(round(DT_mun_y[["Fecha","prvivn_" + mun_solar]].set_index("Fecha").dropna().iloc[-1, 0], 0))
         input_recursospropios = 0.4*(input_preciom2*input_superficieconstruida)
         input_creditoconcedido = 0.6*(input_preciom2*input_superficieconstruida)
+        input_gastosconstitucion = 0.01*(input_creditoconcedido)
         
         input_costem2construido = round(bec_df["Costos_edificimitjaneres_ma4"].values[-1], 1)
         left, center, right= st.columns((1,1,1))
@@ -726,7 +727,6 @@ if selected == "Análisis dinámico":
         
         ponderaciones_edi = ponderaciones_edi.drop("Ponderación", axis=1)
         ponderaciones_edi = ponderaciones_edi.sum(axis=0)
-
         proportion_data = conn.read(worksheet="Propuesta_din_perc", usecols=list(range(12)), ttl=5).dropna(how="all")
         proportion_data = proportion_data[~proportion_data["Nombre"].isna()].set_index("Tesorería")
         estatic_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5).dropna(how="all")
@@ -883,7 +883,7 @@ if selected == "Análisis dinámico":
         def calcula_tir(cashflows):
             cashflows = np.array(cashflows)
             irr = npf.irr(cashflows)
-            return irr*100
+            return irr*100*4
         def calcula_payback_period(cashflows):
             for index, value in enumerate(cashflows):
                 if value>0:
@@ -922,7 +922,6 @@ if selected == "Análisis dinámico":
             st.metric(label="**TASA INTERNA DE RETORNO (TIR)**", value=f"""{calcula_tir(TIR_din1["CASH FLOW ANTES FINANCIACIÓN"].values):,.1f}%""")
             st.metric(label="**PAYBACK ANTES DE FINANCIACIÓN**", value=f"""{calcula_payback_period(TIR_din1["CASH FLOW ANTES FINANCIACIÓN ACUM"])}""")
             st.metric(label="**PAYBACK DESPUÉS DE FINANCIACIÓN**", value=f"""{calcula_payback_period(TIR_din1["CASH FLOW DESPUÉS DE FINANCIACIÓN ACUM"])}""")
-
         with center:
             propuesta2_din = propuesta_dinamico_df[1].set_index("Tesorería")
             TIR_din2 = propuesta2_din.T.copy()
@@ -991,7 +990,7 @@ if selected == "Resumen de resultados":
     def calcula_tir(cashflows):
         cashflows = np.array(cashflows)
         irr = npf.irr(cashflows)
-        return irr*100
+        return irr*100*4
 
     left, center, right= st.columns((1,1,1))
     with left:
