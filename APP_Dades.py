@@ -481,15 +481,15 @@ if selected == "Análisis estático":
             st.metric(label="**TOTAL GASTOS DE FINANCIACIÓN**", value=f"""{total_fin:,.0f}""")
             st.markdown('<h1 class="title-box-res">RESULTADO ANTES DE IMPUESTOS (BAI)</h1>', unsafe_allow_html=True)
             st.metric(label="**BAI**", value=f"""{round(total_ingresos - total_gastos - total_fin,1):,.0f}""")
-            submit_button = st.button(label="Guardar propuesta")
+            # submit_button = st.button(label="Guardar propuesta")
             result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
-            if submit_button:
-                for variable_name in existing_data['Nombre']:
-                    variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
-                    result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
-                result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
-                conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
-                st.success("¡Propuesta guardada!")
+            # if submit_button:
+            for variable_name in existing_data['Nombre']:
+                variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
+                result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
+            result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
+            conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
+                # st.success("¡Propuesta guardada!")
             # with st.spinner('Procesando, por favor espere...'):
             #     conn = st.connection("gsheets", type=GSheetsConnection)
             #     existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
