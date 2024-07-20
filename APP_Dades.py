@@ -337,9 +337,7 @@ if selected == "Análisis estático":
         if selected_propuesta!="Comparativa":
             metodo_calculo = st.radio("**Método de cálculo**", ("Fijar rentabilidad antes de impuestos y intereses", "Fijar precio del solar"), horizontal=False)
     with right:
-        if selected_propuesta!="Comparativa":
-            st.write("")
-            submit_reset = st.button(label="Valores predeterminados")
+        st.write("")
     if selected_propuesta!="Comparativa":
         with st.spinner('Procesando, por favor espere...'):
             conn = st.connection("gsheets", type=GSheetsConnection)
@@ -893,7 +891,7 @@ if selected == "Análisis dinámico":
         def calculate_npv(cashflows, discount_rate, start_period=0):
             npv = 0
             for period, cashflow in enumerate(cashflows[start_period:], start=start_period):
-                npv += cashflow / ((1 + discount_rate) ** period)
+                npv += cashflow / ((1 + discount_rate/4) ** period)
             return npv
         
         def plot_npv_vs_discount_rate(cashflows, discount_rates, start_period, bar_color):
@@ -919,7 +917,7 @@ if selected == "Análisis dinámico":
             TIR_din1 = propuesta1_din.T.copy()
             TIR_din1 = TIR_din1[TIR_din1.index!="TOTAL"][["CASH FLOW ANTES FINANCIACIÓN", "CASH FLOW DESPUÉS DE FINANCIACIÓN", "CASH FLOW ANTES FINANCIACIÓN ACUM", "CASH FLOW DESPUÉS DE FINANCIACIÓN ACUM"]]
             st.markdown(f'<div class="custom-box-propuesta1">PROPUESTA 1</div>', unsafe_allow_html=True)   
-            st.metric(label="**TASA INTERNA DE RETORNO (TIR)**", value=f"""{calcula_tir(TIR_din1["CASH FLOW ANTES FINANCIACIÓN"].values):,.1f}%""")
+            st.metric(label="**TASA INTERNA DE RETORNO (TIR)**", value=f"""{calcula_tir(TIR_din1["CASH FLOW DESPUÉS DE FINANCIACIÓN"].values):,.1f}%""")
             st.metric(label="**PAYBACK ANTES DE FINANCIACIÓN**", value=f"""{calcula_payback_period(TIR_din1["CASH FLOW ANTES FINANCIACIÓN ACUM"])}""")
             st.metric(label="**PAYBACK DESPUÉS DE FINANCIACIÓN**", value=f"""{calcula_payback_period(TIR_din1["CASH FLOW DESPUÉS DE FINANCIACIÓN ACUM"])}""")
         with center:
@@ -927,7 +925,7 @@ if selected == "Análisis dinámico":
             TIR_din2 = propuesta2_din.T.copy()
             TIR_din2 = TIR_din2[TIR_din2.index!="TOTAL"][["CASH FLOW ANTES FINANCIACIÓN", "CASH FLOW DESPUÉS DE FINANCIACIÓN", "CASH FLOW ANTES FINANCIACIÓN ACUM", "CASH FLOW DESPUÉS DE FINANCIACIÓN ACUM"]]
             st.markdown(f'<div class="custom-box-propuesta2">PROPUESTA 2</div>', unsafe_allow_html=True)   
-            st.metric(label="**TASA INTERNA DE RETORNO (TIR)**", value=f"""{calcula_tir(TIR_din2["CASH FLOW ANTES FINANCIACIÓN"].values):,.1f}%""")
+            st.metric(label="**TASA INTERNA DE RETORNO (TIR)**", value=f"""{calcula_tir(TIR_din2["CASH FLOW DESPUÉS DE FINANCIACIÓN"].values):,.1f}%""")
             st.metric(label="**PAYBACK ANTES DE FINANCIACIÓN**", value=f"""{calcula_payback_period(TIR_din2["CASH FLOW ANTES FINANCIACIÓN ACUM"])}""")
             st.metric(label="**PAYBACK DESPUÉS DE FINANCIACIÓN**", value=f"""{calcula_payback_period(TIR_din2["CASH FLOW DESPUÉS DE FINANCIACIÓN ACUM"])}""")
 
@@ -936,7 +934,7 @@ if selected == "Análisis dinámico":
             TIR_din3 = propuesta3_din.T.copy()
             TIR_din3 = TIR_din3[TIR_din3.index!="TOTAL"][["CASH FLOW ANTES FINANCIACIÓN", "CASH FLOW DESPUÉS DE FINANCIACIÓN", "CASH FLOW ANTES FINANCIACIÓN ACUM", "CASH FLOW DESPUÉS DE FINANCIACIÓN ACUM"]]
             st.markdown(f'<div class="custom-box-propuesta3">PROPUESTA 3</div>', unsafe_allow_html=True)   
-            st.metric(label="**TASA INTERNA DE RETORNO (TIR)**", value=f"""{calcula_tir(TIR_din3["CASH FLOW ANTES FINANCIACIÓN"].values):,.1f}%""")
+            st.metric(label="**TASA INTERNA DE RETORNO (TIR)**", value=f"""{calcula_tir(TIR_din3["CASH FLOW DESPUÉS DE FINANCIACIÓN"].values):,.1f}%""")
             st.metric(label="**PAYBACK ANTES DE FINANCIACIÓN**", value=f"""{calcula_payback_period(TIR_din3["CASH FLOW ANTES FINANCIACIÓN ACUM"])}""")
             st.metric(label="**PAYBACK DESPUÉS DE FINANCIACIÓN**", value=f"""{calcula_payback_period(TIR_din3["CASH FLOW DESPUÉS DE FINANCIACIÓN ACUM"])}""")
 
