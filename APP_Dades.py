@@ -408,10 +408,10 @@ if selected == "Análisis estático":
                     result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
                 result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
                 conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
-                with st.spinner('Procesando, por favor espere...'):
-                    conn = st.connection("gsheets", type=GSheetsConnection)
-                    existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
-                    existing_data = existing_data.dropna(how="all")
+                # with st.spinner('Procesando, por favor espere...'):
+                #     conn = st.connection("gsheets", type=GSheetsConnection)
+                #     existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
+                #     existing_data = existing_data.dropna(how="all")
             if metodo_calculo=="Fijar precio del solar":
                 input_ventas1 = input_preciom2*input_superficieconstruida
                 input_creditoconcedido = 0.6*input_ventas1
@@ -432,10 +432,10 @@ if selected == "Análisis estático":
                     result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
                 result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
                 conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
-                with st.spinner('Procesando, por favor espere...'):
-                    conn = st.connection("gsheets", type=GSheetsConnection)
-                    existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
-                    existing_data = existing_data.dropna(how="all")
+                # with st.spinner('Procesando, por favor espere...'):
+                #     conn = st.connection("gsheets", type=GSheetsConnection)
+                #     existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
+                #     existing_data = existing_data.dropna(how="all")
         
         left, right= st.columns((1,1))
         with left:
@@ -490,10 +490,10 @@ if selected == "Análisis estático":
                 result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
                 conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
                 st.success("¡Propuesta guardada!")
-            with st.spinner('Procesando, por favor espere...'):
-                conn = st.connection("gsheets", type=GSheetsConnection)
-                existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
-                existing_data = existing_data.dropna(how="all")
+            # with st.spinner('Procesando, por favor espere...'):
+            #     conn = st.connection("gsheets", type=GSheetsConnection)
+            #     existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
+            #     existing_data = existing_data.dropna(how="all")
         left, right = st.columns((1,1))
         with left:
             def sorted_barplot_with_proportions():
@@ -686,30 +686,29 @@ if selected == "Análisis dinámico":
         for column in display_proportion.columns:
             if pd.api.types.is_numeric_dtype(display_proportion[column]):
                 display_proportion[column] *= 100
-
-        n_columns = st.columns(len(quarters))
-        n_elements = display_proportion["Tesorería"].tolist()
-        analisis_prop = pd.DataFrame(index=n_elements)
-        for i, input_col in enumerate(n_columns):
-            column_data = []
-            with input_col:
-                if i == 0:
-                    for j, element in enumerate(n_elements):
-                        value= st.text_input("", element, key=j*1000+10000000000)
-                        column_data.append(value)
-                else:
-                    for j in range(len(n_elements)+1):
-                        if j == 0:
-                            value = st.write(quarters[i - 1])
-                        else:
-                            value = st.number_input("", value=display_proportion.iloc[j-1,i], key=int(str(i+1000) + str(j+1000) + str(j+10001)))
-                            column_data.append(value)
-                analisis_prop[str(quarters[i-1])] = column_data
-        for column in analisis_prop.columns:
-            if pd.api.types.is_numeric_dtype(analisis_prop[column]):
-                analisis_prop[column] /= 100
-        analisis_prop = analisis_prop.drop("TOTAL", axis=1).reset_index().rename(columns={"index":"Tesorería"})
-        analisis_prop_fin = pd.concat([analisis_prop, save_rest], axis=0)
+        display_proportion = st.data_editor(display_proportion.set_index("Tesorería"))
+        # n_columns = st.columns(len(quarters))
+        # n_elements = display_proportion["Tesorería"].tolist()
+        # analisis_prop = pd.DataFrame(index=n_elements)
+        # for i, input_col in enumerate(n_columns):
+        #     column_data = []
+        #     with input_col:
+        #         if i == 0:
+        #             for j, element in enumerate(n_elements):
+        #                 value= st.text_input("", element, key=j*1000+10000000000)
+        #                 column_data.append(value)
+        #         else:
+        #             for j in range(len(n_elements)+1):
+        #                 if j == 0:
+        #                     value = st.write(quarters[i - 1])
+        #                 else:
+        #                     value = st.number_input("", value=display_proportion.iloc[j-1,i], key=int(str(i+1000) + str(j+1000) + str(j+10001)))
+        #                     column_data.append(value)
+        #         analisis_prop[str(quarters[i-1])] = column_data
+        for column in display_proportion.columns:
+            if pd.api.types.is_numeric_dtype(display_proportion[column]):
+                display_proportion[column] /= 100
+        analisis_prop_fin = pd.concat([display_proportion.reset_index(), save_rest], axis=0)
         proportion_data_final = pd.merge(proportion_data[["Tesorería", "Nombre"]], analisis_prop_fin, how="left", on="Tesorería")
         submit_button_prop = st.button(label="Guardar evolución")
         if submit_button_prop:
@@ -725,10 +724,11 @@ if selected == "Análisis dinámico":
         
         ponderaciones_edi = ponderaciones_edi.drop("Ponderación", axis=1)
         ponderaciones_edi = ponderaciones_edi.sum(axis=0)
-        proportion_data = conn.read(worksheet="Propuesta_din_perc", usecols=list(range(12)), ttl=5).dropna(how="all")
-        proportion_data = proportion_data[~proportion_data["Nombre"].isna()].set_index("Tesorería")
+        # proportion_data = conn.read(worksheet="Propuesta_din_perc", usecols=list(range(12)), ttl=5).dropna(how="all")
+        proportion_data = proportion_data_final[~proportion_data_final["Nombre"].isna()].set_index("Tesorería")
+        # estatic_data = propuesta_estatico_df[selected_propuesta[-1]-1].copy()
         estatic_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5).dropna(how="all")
-        dinamic_data = conn.read(worksheet="Propuesta_din"+ selected_propuesta[-1], usecols=list(range(12)), ttl=5).dropna(how="all")
+        # dinamic_data = conn.read(worksheet="Propuesta_din"+ selected_propuesta[-1], usecols=list(range(12)), ttl=5).dropna(how="all")
         proportion_data.loc["EDIFICACIÓN", quarters[:-1]] = ponderaciones_edi.values
         proportion_data = proportion_data.reset_index()
         for index, row in estatic_data.iterrows():
@@ -790,16 +790,18 @@ if selected == "Análisis dinámico":
         proportion_data_aux = proportion_data_aux.fillna(0)
         proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN"] =proportion_data_aux.loc['CASH FLOW ANTES FINANCIACIÓN'] + proportion_data_aux.loc['CREDITO UTILIZADO'] - proportion_data_aux.loc['GASTOS DE CONSTITUCIÓN'] - proportion_data_aux.loc['INTERESES SOBRE EL SALDO VIVO'] - proportion_data_aux.loc['DEVOLUCIONES DEL PRINCIPAL']
         proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN ACUM"] = proportion_data_aux.loc["CASH FLOW DESPUÉS DE FINANCIACIÓN"].cumsum()
-        conn.update(worksheet="Propuesta_din"+ selected_propuesta[-1], data=proportion_data_aux.reset_index())
+        if submit_button_prop:
+            conn.update(worksheet="Propuesta_din"+ selected_propuesta[-1], data=proportion_data_aux.reset_index())
         def format_dataframes(df, style_n):
             if style_n==True:
                 return(df.style.format("{:,.0f}"))
             else:
                 return(df.style.format("{:,.1f}"))
-        with st.spinner('Procesando, por favor espere...'):
-            conn = st.connection("gsheets", type=GSheetsConnection)
-            dinamic_data = conn.read(worksheet="Propuesta_din"+ selected_propuesta[-1], usecols=list(range(11)), ttl=5).dropna(how="all")
-        dinamic_data = dinamic_data.rename(columns={"Tesorería":"TESORERÍA"})
+        # with st.spinner('Procesando, por favor espere...'):
+        #     conn = st.connection("gsheets", type=GSheetsConnection)
+        #     dinamic_data = conn.read(worksheet="Propuesta_din"+ selected_propuesta[-1], usecols=list(range(11)), ttl=5).dropna(how="all")
+        dinamic_data = proportion_data_aux.copy()
+        dinamic_data = dinamic_data.reset_index().rename(columns={"Tesorería":"TESORERÍA"})
         dinamic_data = dinamic_data[dinamic_data["TESORERÍA"]!="EVOLUCIÓN DE LA CONSTRUCCIÓN"]
         dinamic_data.set_index("TESORERÍA", inplace=True)
         dinamic_data["TOTAL"] = dinamic_data.sum(axis=1)
