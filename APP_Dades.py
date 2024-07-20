@@ -608,41 +608,41 @@ if selected == "Análisis estático":
             propuesta1_est = propuesta_estatico_df[0]
             st.markdown(f'<div class="custom-box-propuesta1">PROPUESTA 1</div>', unsafe_allow_html=True)   
             # st.plotly_chart(bar_plotly(super_df, "Distribución de superficie en m2", "Superficie en m2"))
-            total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta1_est)
-            st.metric(label="**Total ingresos**", value=f"""{int((total_ingresos)):,.0f}""")
-            st.metric(label="**Total gastos**", value=f"""{int(total_gastos):,.0f}""")
-            st.metric(label="**Total gastos de financiación**", value=f"""{int(total_fin):,.0f}""")
-            st.metric(label="**BAII**", value=f"""{int(BAII_propuesta):,.0f}""")
-            st.metric(label="**BAI**", value=f"""{int(BAI_propuesta):,.0f}""")
+            total_gastos1, total_fin1, total_ingresos1, BAII_propuesta1, BAI_propuesta1 = calculate_metrics(propuesta1_est)
+            st.metric(label="**Total ingresos**", value=f"""{int((total_ingresos1)):,.0f}""")
+            st.metric(label="**Total gastos**", value=f"""{int(total_gastos1):,.0f}""")
+            st.metric(label="**Total gastos de financiación**", value=f"""{int(total_fin1):,.0f}""")
+            st.metric(label="**BAII**", value=f"""{int(BAII_propuesta1):,.0f}""")
+            st.metric(label="**BAI**", value=f"""{int(BAI_propuesta1):,.0f}""")
 
         with center:
             propuesta2_est = propuesta_estatico_df[1]
             st.markdown(f'<div class="custom-box-propuesta2">PROPUESTA 2</div>', unsafe_allow_html=True)   
-            total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta2_est)
-            st.metric(label="**Total ingresos**", value=f"""{int(total_ingresos):,.0f}""")
-            st.metric(label="**Total gastos**", value=f"""{int(total_gastos):,.0f}""")
-            st.metric(label="**Total gastos de financiación**", value=f"""{int(total_fin):,.0f}""")
-            st.metric(label="**BAII**", value=f"""{int(BAII_propuesta):,.0f}""")
-            st.metric(label="**BAI**", value=f"""{int(BAI_propuesta):,.0f}""")
+            total_gastos2, total_fin2, total_ingresos2, BAII_propuesta2, BAI_propuesta2 = calculate_metrics(propuesta2_est)
+            st.metric(label="**Total ingresos**", value=f"""{int(total_ingresos2):,.0f}""")
+            st.metric(label="**Total gastos**", value=f"""{int(total_gastos2):,.0f}""")
+            st.metric(label="**Total gastos de financiación**", value=f"""{int(total_fin2):,.0f}""")
+            st.metric(label="**BAII**", value=f"""{int(BAII_propuesta2):,.0f}""")
+            st.metric(label="**BAI**", value=f"""{int(BAI_propuesta2):,.0f}""")
 
         with right:
             propuesta3_est = propuesta_estatico_df[2]
             st.markdown(f'<div class="custom-box-propuesta3">PROPUESTA 3</div>', unsafe_allow_html=True)   
-            total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta = calculate_metrics(propuesta3_est)
-            st.metric(label="**Total ingresos**", value=f"""{int(total_ingresos):,.0f}""")
-            st.metric(label="**Total gastos**", value=f"""{int(total_gastos):,.0f}""")
-            st.metric(label="**Total gastos de financiación**", value=f"""{int(total_fin):,.0f}""")
-            st.metric(label="**BAII**", value=f"""{int(BAII_propuesta):,.0f}""")
-            st.metric(label="**BAI**", value=f"""{int(BAI_propuesta):,.0f}""")
+            total_gastos3, total_fin3, total_ingresos3, BAII_propuesta3, BAI_propuesta3 = calculate_metrics(propuesta3_est)
+            st.metric(label="**Total ingresos**", value=f"""{int(total_ingresos3):,.0f}""")
+            st.metric(label="**Total gastos**", value=f"""{int(total_gastos3):,.0f}""")
+            st.metric(label="**Total gastos de financiación**", value=f"""{int(total_fin3):,.0f}""")
+            st.metric(label="**BAII**", value=f"""{int(BAII_propuesta3):,.0f}""")
+            st.metric(label="**BAI**", value=f"""{int(BAI_propuesta3):,.0f}""")
 
         st.markdown(f'<div class="custom-box">RESULTADO FINANCIERO</div>', unsafe_allow_html=True)  
         left, center, right= st.columns((1,1,1))
         with left:
-            st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta, "#deffa0"), use_container_width=True, responsive=True)
+            st.plotly_chart(bar_plotly_finmetrics(total_gastos1, total_fin1, total_ingresos1, BAII_propuesta1, BAI_propuesta1, "#deffa0"), use_container_width=True, responsive=True)
         with center:
-            st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta, "#9EA1D4"), use_container_width=True, responsive=True)
+            st.plotly_chart(bar_plotly_finmetrics(total_gastos2, total_fin2, total_ingresos2, BAII_propuesta2, BAI_propuesta2, "#9EA1D4"), use_container_width=True, responsive=True)
         with right:
-            st.plotly_chart(bar_plotly_finmetrics(total_gastos, total_fin, total_ingresos, BAII_propuesta, BAI_propuesta, "#F6B974"), use_container_width=True, responsive=True)
+            st.plotly_chart(bar_plotly_finmetrics(total_gastos3, total_fin3, total_ingresos3, BAII_propuesta3, BAI_propuesta3, "#F6B974"), use_container_width=True, responsive=True)
 
 
 
