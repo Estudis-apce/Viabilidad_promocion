@@ -325,9 +325,7 @@ if selected == "Análisis estático":
         
         input_costem2construido = round(bec_df["Costos_edificimitjaneres_ma4"].values[-1], 1)
 
-        # conn = st.connection("gsheets", type=GSheetsConnection)
-        # dinamic_intereses = conn.read(worksheet="Propuesta_din" + selected_propuesta[-1], usecols=list(range(11)), ttl=5)
-        # dinamic_intereses = dinamic_intereses.dropna(how="all")
+
 
         left, center, right= st.columns((1,1,1))
         with left:
@@ -344,58 +342,6 @@ if selected == "Análisis estático":
             if metodo_calculo=="Fijar precio del solar":
                 input_solar1 = st.number_input(f"***:blue[Coste del solar]***",  min_value=0.0, max_value=999999999.0, value=0.0, step=1000.0)
             submit_reset = st.button(label="Recalcular valores")
-        if submit_reset:
-            if metodo_calculo=="Fijar rentabilidad antes de impuestos y intereses":
-                input_ventas1 = input_preciom2*input_superficieconstruida
-                input_creditoconcedido = 0.6*input_ventas1
-                input_edificacion1= input_costem2construido*input_superficieconstruida
-                input_edificacion2 = 0.07*input_edificacion1
-                input_edificacion3 = 0.05*input_edificacion1
-                input_edificacion4 = 0.02*input_edificacion1
-                input_edificacion5 = 0.03*input_edificacion1
-                input_admin1 = 0.05*input_edificacion1
-                input_admin2 = 0.05*input_ventas1
-                input_solar1 = ((input_ventas1/(1+(rentabilidad_n/100))) - input_edificacion1 - input_edificacion2 - input_edificacion3 - input_edificacion4 - input_edificacion5 - input_admin1 - input_admin2)/1.03
-                input_solar2 = 0.03*input_solar1
-                total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
-                # input_fin1 = dinamic_intereses.set_index("Tesorería").loc["INTERESES SOBRE EL SALDO VIVO"].sum()
-                input_fin1 = input_ventas1*0.6*0.00507543562507061
-                # input_fin2 = (input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 - 0.4*input_ventas1)*0.01
-                input_fin2 = input_ventas1*0.6*0.01
-                result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
-                for variable_name in existing_data['Nombre']:
-                    variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
-                    result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
-                result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
-                conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
-
-            if metodo_calculo=="Fijar precio del solar":
-                input_ventas1 = input_preciom2*input_superficieconstruida
-                input_creditoconcedido = 0.6*input_ventas1
-                input_edificacion1= input_costem2construido*input_superficieconstruida
-                input_edificacion2 = 0.07*input_edificacion1
-                input_edificacion3 = 0.05*input_edificacion1
-                input_edificacion4 = 0.02*input_edificacion1
-                input_edificacion5 = 0.03*input_edificacion1
-                input_admin1 = 0.05*input_edificacion1
-                input_admin2 = 0.05*input_ventas1
-                input_solar2 = 0.03*input_solar1
-                total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
-                # input_fin1 = dinamic_intereses.set_index("Tesorería").loc["INTERESES SOBRE EL SALDO VIVO"].sum()
-                input_fin1 = input_ventas1*0.6*0.00507543562507061
-                # input_fin2 = (input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 - 0.4*input_ventas1)*0.01
-                input_fin2 = input_ventas1*0.6*0.01
-                result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
-                for variable_name in existing_data['Nombre']:
-                    variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
-                    result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
-                result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
-                conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
-                # with st.spinner('Procesando, por favor espere...'):
-                #     conn = st.connection("gsheets", type=GSheetsConnection)
-                #     existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
-                #     existing_data = existing_data.dropna(how="all")
-        
         left, right= st.columns((1,1))
         with left:
             st.markdown('<h1 class="title-box">GASTOS</h1>', unsafe_allow_html=True)
@@ -434,7 +380,12 @@ if selected == "Análisis estático":
             st.markdown('<h1 class="title-box-res">RESULTADO ANTES DE IMPUESTOS E INTERESES (BAII)</h1>', unsafe_allow_html=True)
             st.metric(label="**BAII**", value=f"""{round(total_ingresos - total_gastos,1):,.0f}""")
             st.markdown('<h1 class="title-box-fin">FINANCIACIÓN</h1>', unsafe_allow_html=True)
-            input_fin1 = st.number_input("**INTERESES HIPOTECA**", min_value=0.0, max_value=999999999.0, value=input_ventas1*0.6*0.00507543562507061, step=1000.0)
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            dinamic_intereses = conn.read(worksheet="Propuesta_din" + selected_propuesta[-1], usecols=list(range(11)), ttl=5)
+            dinamic_intereses = dinamic_intereses.dropna(how="all")
+            
+            input_fin1 = st.number_input("**INTERESES HIPOTECA**", min_value=0.0, max_value=999999999.0, value=dinamic_intereses.set_index("Tesorería").loc["INTERESES SOBRE EL SALDO VIVO"].sum(), step=1000.0)
+            # input_fin1 = st.number_input("**INTERESES HIPOTECA**", min_value=0.0, max_value=999999999.0, value=input_ventas1*0.6*0.00507543562507061, step=1000.0)
             input_fin2 = st.number_input("**GASTOS DE CONSTITUCIÓN** (1% sobre la hipoteca total)", min_value=0.0, max_value=999999999.0, value=input_fin2, step=1000.0)
             total_fin = input_fin1 + input_fin2
             st.metric(label="**TOTAL GASTOS DE FINANCIACIÓN**", value=f"""{total_fin:,.0f}""")
@@ -448,11 +399,55 @@ if selected == "Análisis estático":
                 result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
             result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
             conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
-                # st.success("¡Propuesta guardada!")
-            # with st.spinner('Procesando, por favor espere...'):
-            #     conn = st.connection("gsheets", type=GSheetsConnection)
-            #     existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
-            #     existing_data = existing_data.dropna(how="all")
+
+        if submit_reset:
+            if metodo_calculo=="Fijar rentabilidad antes de impuestos y intereses":
+                input_ventas1 = input_preciom2*input_superficieconstruida
+                input_creditoconcedido = 0.6*input_ventas1
+                input_edificacion1= input_costem2construido*input_superficieconstruida
+                input_edificacion2 = 0.07*input_edificacion1
+                input_edificacion3 = 0.05*input_edificacion1
+                input_edificacion4 = 0.02*input_edificacion1
+                input_edificacion5 = 0.03*input_edificacion1
+                input_admin1 = 0.05*input_edificacion1
+                input_admin2 = 0.05*input_ventas1
+                input_solar1 = ((input_ventas1/(1+(rentabilidad_n/100))) - input_edificacion1 - input_edificacion2 - input_edificacion3 - input_edificacion4 - input_edificacion5 - input_admin1 - input_admin2)/1.03
+                input_solar2 = 0.03*input_solar1
+                total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
+                input_fin1 = dinamic_intereses.set_index("Tesorería").loc["INTERESES SOBRE EL SALDO VIVO"].sum()
+                # input_fin1 = input_ventas1*0.6*0.00507543562507061
+                # input_fin2 = (input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 - 0.4*input_ventas1)*0.01
+                input_fin2 = input_ventas1*0.6*0.01
+                result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
+                for variable_name in existing_data['Nombre']:
+                    variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
+                    result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
+                result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
+                conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
+
+            if metodo_calculo=="Fijar precio del solar":
+                input_ventas1 = input_preciom2*input_superficieconstruida
+                input_creditoconcedido = 0.6*input_ventas1
+                input_edificacion1= input_costem2construido*input_superficieconstruida
+                input_edificacion2 = 0.07*input_edificacion1
+                input_edificacion3 = 0.05*input_edificacion1
+                input_edificacion4 = 0.02*input_edificacion1
+                input_edificacion5 = 0.03*input_edificacion1
+                input_admin1 = 0.05*input_edificacion1
+                input_admin2 = 0.05*input_ventas1
+                input_solar2 = 0.03*input_solar1
+                total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
+                input_fin1 = dinamic_intereses.set_index("Tesorería").loc["INTERESES SOBRE EL SALDO VIVO"].sum()
+                # input_fin1 = input_ventas1*0.6*0.00507543562507061
+                # input_fin2 = (input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 - 0.4*input_ventas1)*0.01
+                input_fin2 = input_ventas1*0.6*0.01
+                result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
+                for variable_name in existing_data['Nombre']:
+                    variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
+                    result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
+                result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
+                conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
+
         left, right = st.columns((1,1))
         with left:
             def sorted_barplot_with_proportions():
