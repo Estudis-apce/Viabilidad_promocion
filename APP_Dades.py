@@ -332,10 +332,10 @@ if selected == "Análisis estático":
         left, center, right= st.columns((1,1,1))
         with left:
             input_recursospropios = st.number_input("**Recursos propios** (40% de los ingresos por ventas)", min_value=0.0, max_value=999999999.0, value=input_recursospropios, step=1000.0)
-            # input_creditoconcedido = st.number_input("**Crédito concedido** (60% de los ingresos por ventas)",  min_value=0.0, max_value=999999999.0, value=input_creditoconcedido, step=1000.0)
+            input_creditoconcedido = st.number_input("**Crédito concedido** (60% de los ingresos por ventas)",  min_value=0.0, max_value=999999999.0, value=input_creditoconcedido, step=1000.0)
             input_preciom2 = st.number_input(f"**Precio por m\u00b2 construido en {mun_solar}**",  min_value=0, max_value=999999999, value=input_preciom2, step=1000)
         with center:
-            # input_tipodeinteres = st.number_input("**Tipo de interés** (EURIBOR a 1 año + 1%)",  min_value=0.0, max_value=999999999.0, value=input_tipodeinteres, step=1000.0)
+            input_tipodeinteres = st.number_input("**Tipo de interés** (EURIBOR a 1 año + 1%)",  min_value=0.0, max_value=999999999.0, value=input_tipodeinteres, step=1000.0)
             input_superficieconstruida = st.number_input("**Superficie construida**",  min_value=0.0, max_value=999999999.0, value=input_superficieconstruida, step=1000.0)
             input_costem2construido = st.number_input("**Coste promedio del m\u00b2 construido** (BEC)",  min_value=0.0, max_value=999999999.0, value=input_costem2construido, step=1000.0)
         with right:
