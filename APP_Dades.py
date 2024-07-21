@@ -118,7 +118,6 @@ selected = option_menu(
         })
 
 
-#  Importar todos los datos
 @st.cache_resource
 def import_data(trim_limit, month_limit):
     with open('Censo2021.json', 'r') as outfile:
@@ -177,55 +176,14 @@ DT_monthly, DT_terr, DT_terr_y, DT_mun, DT_mun_y, DT_dis, DT_dis_y, maestro_mun,
 
 
 if selected=="Edificabilidad":
-#     left, right= st.columns((0.5,2))
-#     with left:
-#         uploaded_file = st.file_uploader("**Cargar archivo con los parametros de edificabilidad**", type="xlsx")
-#     with right:
-#         if uploaded_file is not None:
-#             params_edif = pd.read_excel(uploaded_file)
-#             st.markdown(params_edif.to_html(), unsafe_allow_html=True)
-    # left, center, right= st.columns((1,1,1))
-    # with center:
-    #     selected_propuesta = st.radio("", ("Propuesta 1", "Propuesta 2", "Propuesta 3", "Comparativa"), horizontal=True)
-    # if (selected_propuesta=="Propuesta 1") or (selected_propuesta=="Propuesta 2") or (selected_propuesta=="Propuesta 3"):
-    #     conn = st.connection("gsheets", type=GSheetsConnection)
-    #     existing_data = conn.read(worksheet="Edificabilidad" + selected_propuesta[-1],usecols=list(range(3)), ttl=5)
-    #     mun_solar = existing_data[existing_data["Nombre"]=="mun_solar"].values[0]
-    #     existing_data = existing_data[existing_data["Nombre"]!="mun_solar"].dropna(how="all").reset_index().drop("index", axis=1)
-    #     st.title("DISTRIBUCIÓN DE SUPERFICIES")
-    #     left, right = st.columns((1,1))
-    #     for index, row in existing_data.iterrows():
-    #         if index % 2 == 0:
-    #             with left:
-    #                 input_value = st.number_input(f"**{row['Elemento']}:**", value=row['Valor'])
-    #                 exec(f"{row['Nombre']} = {input_value}")
-    #         else:
-    #             with right:
-    #                 input_value = st.number_input(f"**{row['Elemento']}:**", value=row['Valor'])
-    #                 exec(f"{row['Nombre']} = {input_value}")
-    #     submit_button = st.button(label="Guardar propuesta")
-    #     result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
-    #     if submit_button:
-    #         for variable_name in existing_data['Nombre']:
-    #             variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
-    #             result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
-    #         result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
-    #         conn.update(worksheet="Edificabilidad", data=result_df)
-    #         st.success("¡Propuesta guardada!")
-    # if selected_propuesta=="Comparativa":
-
-    num_propuesta_edifi = ["Edificabilidad1", "Edificabilidad2", "Edificabilidad3"]
     propuesta_edifi_df = []
-    for i in num_propuesta_edifi:
-        # conn = st.connection("gsheets", type=GSheetsConnection)
-        # existing_data = conn.read(worksheet=i, usecols=list(range(3)), ttl=5)
-        # existing_data = existing_data.dropna(how="all")
-        # existing_data = existing_data[existing_data["Nombre"]!="super_otros"]
-        # propuesta_edifi_df.append(existing_data)
+    for i in ["Edificabilidad1", "Edificabilidad2", "Edificabilidad3"]:
         existing_data = pd.read_excel("Propuestas promo.xlsx", sheet_name=i)
         existing_data = existing_data.dropna(how="all")
         existing_data = existing_data[existing_data["Nombre"]!="super_otros"]
         propuesta_edifi_df.append(existing_data)
+
+    @st.cache_resource
     def bar_plotly(df, title_main, title_y, bar_color):
         df["Valor"] = df["Valor"].astype("int64")
         formatted_labels = [f"{valor:,.0f}" for valor in df["Valor"]]
@@ -247,6 +205,7 @@ if selected=="Edificabilidad":
             margin=dict(t=10)
         )
         return fig
+    @st.cache_resource
     def donut_plotly(table_n, title_main):
         colors = ["#6495ED", "#7DF9FF",  "#87CEEB", "#A7C7E7", "#FFA07A"]
         traces = []
@@ -267,6 +226,7 @@ if selected=="Edificabilidad":
         )
         fig = go.Figure(data=traces, layout=layout)
         return fig
+    
     mun_solar = propuesta_edifi_df[0][propuesta_edifi_df[0]["Nombre"]=="mun_solar"]["Valor"].values[0]
     st.markdown(f'<div class="custom-box">LOCALIDAD DEL SOLAR: {mun_solar.upper()}</div>', unsafe_allow_html=True)
     left, center, right= st.columns((1,1,1))
@@ -288,8 +248,7 @@ if selected=="Edificabilidad":
         st.metric(label="**Superficie de parking**", value=f"""{int(propuesta1_edifi[propuesta1_edifi["Nombre"]=="super_parking"]["Valor"]):,.0f}""")
         super1_df = propuesta1_edifi[(propuesta1_edifi['Nombre'].str.startswith('super')) & (~propuesta1_edifi['Nombre'].isin(["super_viviendas", "super_parcela", "super_ocupaciontotal", "super_ocupacionsr", "super_viviendas"]))].drop("Nombre", axis=1)
         mix_viviendas1_df = propuesta1_edifi[(propuesta1_edifi['Nombre'].str.startswith('num_')) & (propuesta1_edifi['Nombre']!="num_viviendas")].drop("Nombre", axis=1)
-        # super_df["Valor"] = round(super_df["Valor"],1)
-        st.markdown(f"""<a href="https://google.com" target="_blank"><button class="button-propuesta1">Ver propuesta gráfica</button></a>""", unsafe_allow_html=True)
+        st.markdown(f"""<a href="https://app.autodeskforma.eu/designmode/pro_brh15fcaos/67b3ad2d-8402-4a4e-8ead-4c14ec8149b4?" target="_blank"><button class="button-propuesta1">Ver propuesta gráfica</button></a>""", unsafe_allow_html=True)
     with center:
         propuesta2_edifi = propuesta_edifi_df[1]
         st.markdown(f'<div class="custom-box-propuesta2">PROPUESTA 2</div>', unsafe_allow_html=True)   
@@ -299,8 +258,7 @@ if selected=="Edificabilidad":
         st.metric(label="**Superficie de parking**", value=f"""{int(propuesta2_edifi[propuesta2_edifi["Nombre"]=="super_parking"]["Valor"]):,.0f}""")
         super2_df = propuesta2_edifi[(propuesta2_edifi['Nombre'].str.startswith('super')) & (~propuesta2_edifi['Nombre'].isin(["super_viviendas", "super_parcela", "super_ocupaciontotal", "super_ocupacionsr", "super_viviendas"]))].drop("Nombre", axis=1)
         mix_viviendas2_df = propuesta2_edifi[(propuesta2_edifi['Nombre'].str.startswith('num_')) & (propuesta2_edifi['Nombre']!="num_viviendas")].drop("Nombre", axis=1)
-        # super_df["Valor"] = round(super_df["Valor"],1)
-        st.markdown(f"""<a href="https://google.com" target="_blank"><button class="button-propuesta2">Ver propuesta gráfica</button></a>""", unsafe_allow_html=True)
+        st.markdown(f"""<a href="https://app.autodeskforma.eu/designmode/pro_brh15fcaos/72658b45-34ef-45a2-b5bc-0af18c14a03d?" target="_blank"><button class="button-propuesta2">Ver propuesta gráfica</button></a>""", unsafe_allow_html=True)
     with right:
         propuesta3_edifi = propuesta_edifi_df[2]
         st.markdown(f'<div class="custom-box-propuesta3">PROPUESTA 3</div>', unsafe_allow_html=True)   
@@ -310,8 +268,8 @@ if selected=="Edificabilidad":
         st.metric(label="**Superficie de parking**", value=f"""{int(propuesta3_edifi[propuesta3_edifi["Nombre"]=="super_parking"]["Valor"]):,.0f}""")
         super3_df = propuesta3_edifi[(propuesta3_edifi['Nombre'].str.startswith('super')) & (~propuesta3_edifi['Nombre'].isin(["super_viviendas", "super_parcela", "super_ocupaciontotal", "super_ocupacionsr", "super_viviendas"]))].drop("Nombre", axis=1)
         mix_viviendas3_df = propuesta3_edifi[(propuesta3_edifi['Nombre'].str.startswith('num_')) & (propuesta3_edifi['Nombre']!="num_viviendas")].drop("Nombre", axis=1)
-        # super_df["Valor"] = round(super_df["Valor"],1)
-        st.markdown(f"""<a href="https://google.com" target="_blank"><button class="button-propuesta3">Ver propuesta gráfica</button></a>""", unsafe_allow_html=True)
+        st.markdown(f"""<a href="https://app.autodeskforma.eu/designmode/pro_brh15fcaos/ddf9b911-7bd6-4bb6-803e-f41877c6e308?" target="_blank"><button class="button-propuesta3">Ver propuesta gráfica</button></a>""", unsafe_allow_html=True)
+
     st.markdown(f'<div class="custom-box">DISTRIBUCIÓN DE SUPERFICIE EN M\u00b2</div>', unsafe_allow_html=True)   
     left, center, right= st.columns((1,1,1))
     with left:
@@ -364,27 +322,27 @@ if selected == "Análisis estático":
         input_preciom2 = int(round(DT_mun_y[["Fecha","prvivn_" + mun_solar]].set_index("Fecha").dropna().iloc[-1, 0], 0))
         input_recursospropios = 0.4*(input_preciom2*input_superficieconstruida)
         input_creditoconcedido = 0.6*(input_preciom2*input_superficieconstruida)
-        input_gastosconstitucion = 0.01*(input_creditoconcedido)
         
         input_costem2construido = round(bec_df["Costos_edificimitjaneres_ma4"].values[-1], 1)
+
+        # conn = st.connection("gsheets", type=GSheetsConnection)
+        # dinamic_intereses = conn.read(worksheet="Propuesta_din" + selected_propuesta[-1], usecols=list(range(11)), ttl=5)
+        # dinamic_intereses = dinamic_intereses.dropna(how="all")
+
         left, center, right= st.columns((1,1,1))
         with left:
             input_recursospropios = st.number_input("**Recursos propios** (40% de los ingresos por ventas)", min_value=0.0, max_value=999999999.0, value=input_recursospropios, step=1000.0)
-            input_creditoconcedido = st.number_input("**Crédito concedido** (60% de los ingresos por ventas)",  min_value=0.0, max_value=999999999.0, value=input_creditoconcedido, step=1000.0)
+            # input_creditoconcedido = st.number_input("**Crédito concedido** (60% de los ingresos por ventas)",  min_value=0.0, max_value=999999999.0, value=input_creditoconcedido, step=1000.0)
             input_preciom2 = st.number_input(f"**Precio por m\u00b2 construido en {mun_solar}**",  min_value=0, max_value=999999999, value=input_preciom2, step=1000)
         with center:
-            input_tipodeinteres = st.number_input("**Tipo de interés** (EURIBOR a 1 año + 1%)",  min_value=0.0, max_value=999999999.0, value=input_tipodeinteres, step=1000.0)
-            input_gastosconstitucion = st.number_input("**Gastos de constitución** (1% del crédito concedido)",  min_value=0.0, max_value=999999999.0, value=input_gastosconstitucion, step=1000.0)
-            # input_comisiondeapertura = st.number_input("Comisión de apertura",  min_value=0.0, max_value=999999999.0, value=input_comisiondeapertura, step=1000.0)
-            # input_comisiondecancelacion = st.number_input("Comisión de cancelación",  min_value=0.0, max_value=999999999.0, value=input_comisiondecancelacion, step=1000.0)
+            # input_tipodeinteres = st.number_input("**Tipo de interés** (EURIBOR a 1 año + 1%)",  min_value=0.0, max_value=999999999.0, value=input_tipodeinteres, step=1000.0)
+            input_superficieconstruida = st.number_input("**Superficie construida**",  min_value=0.0, max_value=999999999.0, value=input_superficieconstruida, step=1000.0)
+            input_costem2construido = st.number_input("**Coste promedio del m\u00b2 construido** (BEC)",  min_value=0.0, max_value=999999999.0, value=input_costem2construido, step=1000.0)
+        with right:
             if metodo_calculo=="Fijar rentabilidad antes de impuestos y intereses": 
                 rentabilidad_n = st.slider('**Rentabilidad (%)**', 0, 50, value=10)
             if metodo_calculo=="Fijar precio del solar":
                 input_solar1 = st.number_input(f"***:blue[Coste del solar]***",  min_value=0.0, max_value=999999999.0, value=0.0, step=1000.0)
-        with right:
-            input_superficieconstruida = st.number_input("**Superficie construida**",  min_value=0.0, max_value=999999999.0, value=input_superficieconstruida, step=1000.0)
-            input_costem2construido = st.number_input("**Coste promedio del m\u00b2 construido** (BEC)",  min_value=0.0, max_value=999999999.0, value=input_costem2construido, step=1000.0)
-            # input_proporcioncompraplano = st.number_input("Proporción de compra sobre plano",  min_value=0.0, max_value=999999999.0, value=input_proporcioncompraplano, step=1000.0)
             submit_reset = st.button(label="Recalcular valores")
         if submit_reset:
             if metodo_calculo=="Fijar rentabilidad antes de impuestos y intereses":
@@ -400,18 +358,17 @@ if selected == "Análisis estático":
                 input_solar1 = ((input_ventas1/(1+(rentabilidad_n/100))) - input_edificacion1 - input_edificacion2 - input_edificacion3 - input_edificacion4 - input_edificacion5 - input_admin1 - input_admin2)/1.03
                 input_solar2 = 0.03*input_solar1
                 total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
-                input_fin1 = input_creditoconcedido*0.11
-                input_fin2 = 0.01*input_creditoconcedido
+                # input_fin1 = dinamic_intereses.set_index("Tesorería").loc["INTERESES SOBRE EL SALDO VIVO"].sum()
+                input_fin1 = input_ventas1*0.6*0.00507543562507061
+                # input_fin2 = (input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 - 0.4*input_ventas1)*0.01
+                input_fin2 = input_ventas1*0.6*0.01
                 result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
                 for variable_name in existing_data['Nombre']:
                     variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
                     result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
                 result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
                 conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
-                # with st.spinner('Procesando, por favor espere...'):
-                #     conn = st.connection("gsheets", type=GSheetsConnection)
-                #     existing_data = conn.read(worksheet="Propuesta_est" + selected_propuesta[-1], usecols=list(range(3)), ttl=5)
-                #     existing_data = existing_data.dropna(how="all")
+
             if metodo_calculo=="Fijar precio del solar":
                 input_ventas1 = input_preciom2*input_superficieconstruida
                 input_creditoconcedido = 0.6*input_ventas1
@@ -424,8 +381,10 @@ if selected == "Análisis estático":
                 input_admin2 = 0.05*input_ventas1
                 input_solar2 = 0.03*input_solar1
                 total_gastos = input_solar1 + input_solar2 + input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 + input_admin1 + input_admin2
-                input_fin1 = input_creditoconcedido*0.11
-                input_fin2 = 0.01*input_creditoconcedido
+                # input_fin1 = dinamic_intereses.set_index("Tesorería").loc["INTERESES SOBRE EL SALDO VIVO"].sum()
+                input_fin1 = input_ventas1*0.6*0.00507543562507061
+                # input_fin2 = (input_edificacion1 + input_edificacion2 + input_edificacion3 + input_edificacion4 + input_edificacion5 - 0.4*input_ventas1)*0.01
+                input_fin2 = input_ventas1*0.6*0.01
                 result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
                 for variable_name in existing_data['Nombre']:
                     variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
@@ -475,7 +434,7 @@ if selected == "Análisis estático":
             st.markdown('<h1 class="title-box-res">RESULTADO ANTES DE IMPUESTOS E INTERESES (BAII)</h1>', unsafe_allow_html=True)
             st.metric(label="**BAII**", value=f"""{round(total_ingresos - total_gastos,1):,.0f}""")
             st.markdown('<h1 class="title-box-fin">FINANCIACIÓN</h1>', unsafe_allow_html=True)
-            input_fin1 = st.number_input("**INTERESES HIPOTECA**", min_value=0.0, max_value=999999999.0, value=input_fin1, step=1000.0)
+            input_fin1 = st.number_input("**INTERESES HIPOTECA**", min_value=0.0, max_value=999999999.0, value=input_ventas1*0.6*0.00507543562507061, step=1000.0)
             input_fin2 = st.number_input("**GASTOS DE CONSTITUCIÓN** (1% sobre la hipoteca total)", min_value=0.0, max_value=999999999.0, value=input_fin2, step=1000.0)
             total_fin = input_fin1 + input_fin2
             st.metric(label="**TOTAL GASTOS DE FINANCIACIÓN**", value=f"""{total_fin:,.0f}""")
@@ -499,17 +458,11 @@ if selected == "Análisis estático":
             def sorted_barplot_with_proportions():
                 data = existing_data[["Parametro", "Valor"]][existing_data["Parametro"] != "INGRESOS POR VENTAS"].iloc[9:,:]
                 
-                # Calculate proportions
                 total_value = data['Valor'].sum()
                 data['Proportion'] = data['Valor'] / total_value * 100
-                
-                # Format proportion as percentage
                 data['Proportion'] = data['Proportion'].round(2).astype(str) + '%'
-
-                # Sort values by proportion
                 data = data.sort_values(by='Proportion', ascending=False)
 
-                # Create the bar plot
                 fig = px.bar(
                     data.sort_values(by='Proportion', ascending=False),
                     x='Parametro',
@@ -520,7 +473,6 @@ if selected == "Análisis estático":
                     color_discrete_sequence=px.colors.qualitative.Set3
                 )
 
-                # Add annotations for labels
                 for i, row in data.iterrows():
                     fig.add_annotation(
                         x=row['Parametro'], y=row['Valor'],
@@ -530,7 +482,6 @@ if selected == "Análisis estático":
 
                 fig.update_layout(height=600, width=1500, paper_bgcolor="#edf1fc", plot_bgcolor='#edf1fc')
                 return fig
-
             st.plotly_chart(sorted_barplot_with_proportions(), use_container_width=True, responsive=True)
         with right:
             max_trim=10
@@ -688,7 +639,7 @@ if selected == "Análisis dinámico":
                 display_proportion[column] *= 100
         display_proportion = st.data_editor(display_proportion.set_index("Tesorería"))
         # n_columns = st.columns(len(quarters))
-        # n_elements = display_proportion["Tesorería"].tolist()
+        # n_elements = display_proportion.reset_index()["Tesorería"].tolist()
         # analisis_prop = pd.DataFrame(index=n_elements)
         # for i, input_col in enumerate(n_columns):
         #     column_data = []
@@ -704,7 +655,7 @@ if selected == "Análisis dinámico":
         #                 else:
         #                     value = st.number_input("", value=display_proportion.iloc[j-1,i], key=int(str(i+1000) + str(j+1000) + str(j+10001)))
         #                     column_data.append(value)
-        #         analisis_prop[str(quarters[i-1])] = column_data
+        #         display_proportion[str(quarters[i-1])] = column_data
         for column in display_proportion.columns:
             if pd.api.types.is_numeric_dtype(display_proportion[column]):
                 display_proportion[column] /= 100
