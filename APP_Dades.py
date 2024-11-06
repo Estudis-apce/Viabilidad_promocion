@@ -171,7 +171,7 @@ def import_data(trim_limit, month_limit):
 
     return([DT_monthly, DT_terr, DT_terr_y, DT_mun_def, DT_mun_y_def, DT_dis, DT_dis_y, maestro_mun, maestro_dis, censo_2021, rentaneta_mun, censo_2021_dis, rentaneta_dis])
 
-DT_monthly, DT_terr, DT_terr_y, DT_mun, DT_mun_y, DT_dis, DT_dis_y, maestro_mun, maestro_dis, censo_2021, rentaneta_mun, censo_2021_dis, rentaneta_dis = import_data("2024-01-01", "2023-12-01")
+DT_monthly, DT_terr, DT_terr_y, DT_mun, DT_mun_y, DT_dis, DT_dis_y, maestro_mun, maestro_dis, censo_2021, rentaneta_mun, censo_2021_dis, rentaneta_dis = import_data("2024-07-01", "2024-09-01")
 
 
 
@@ -396,7 +396,7 @@ if selected == "Análisis estático":
             # if submit_button:
             for variable_name in existing_data['Nombre']:
                 variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
-                result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
+                result_df = result_df._append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
             result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
             conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
 
@@ -421,7 +421,7 @@ if selected == "Análisis estático":
                 result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
                 for variable_name in existing_data['Nombre']:
                     variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
-                    result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
+                    result_df = result_df._append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
                 result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
                 conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
 
@@ -444,7 +444,7 @@ if selected == "Análisis estático":
                 result_df = pd.DataFrame(columns=['Nombre', 'Valor'])
                 for variable_name in existing_data['Nombre']:
                     variable_value = locals().get(variable_name, None)  # Get the value of the variable by name
-                    result_df = result_df.append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
+                    result_df = result_df._append({'Nombre': variable_name, 'Valor': variable_value}, ignore_index=True)
                 result_df = pd.concat([existing_data.iloc[:,0], result_df], axis=1)
                 conn.update(worksheet="Propuesta_est" + selected_propuesta[-1], data=result_df)
 
@@ -990,9 +990,9 @@ if selected == "Resumen de resultados":
     def filedownload_propuestas(filename, num_propuesta):
         towrite = io.BytesIO()
         with pd.ExcelWriter(towrite) as writer:
-            propuesta_edificabilidad_df[num_propuesta-1].drop("Nombre", axis=1).to_excel(writer, sheet_name = f"Propuesta {num_propuesta} - Edificabilidad", encoding='latin-1', index=False, header=True)
-            propuesta_estatico_df[num_propuesta-1].drop("Nombre", axis=1).to_excel(writer, sheet_name = f"Propuesta {num_propuesta} - Análisis estático", encoding='latin-1', index=False, header=True)
-            propuesta_dinamico_df[num_propuesta-1].to_excel(writer, sheet_name = f"Propuesta {num_propuesta} - Análisis dinámico", encoding='latin-1', index=False, header=True)
+            propuesta_edificabilidad_df[num_propuesta-1].drop("Nombre", axis=1).to_excel(writer, sheet_name = f"Propuesta {num_propuesta} - Edificabilidad", index=False, header=True)
+            propuesta_estatico_df[num_propuesta-1].drop("Nombre", axis=1).to_excel(writer, sheet_name = f"Propuesta {num_propuesta} - Análisis estático", index=False, header=True)
+            propuesta_dinamico_df[num_propuesta-1].to_excel(writer, sheet_name = f"Propuesta {num_propuesta} - Análisis dinámico", index=False, header=True)
         towrite.seek(0)
         b64 = base64.b64encode(towrite.read()).decode("latin-1")
         href = f"""<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}">
@@ -1085,7 +1085,7 @@ def tidy_present_monthly(data_ori, columns_sel, year):
     output_data = data_ori[["Fecha"] + [columns_sel]]
     output_data["Any"] = output_data["Fecha"].dt.year
     output_data = output_data.drop_duplicates(["Fecha", columns_sel])
-    output_data = output_data.groupby("Any").sum().pct_change().mul(100).reset_index()
+    output_data = output_data.set_index("Fecha").groupby("Any").sum().pct_change().mul(100).reset_index()
     output_data = output_data[output_data["Any"]==int(year)].set_index("Any")
     return(output_data.values[0][0])
 
@@ -1097,7 +1097,7 @@ def tidy_present_monthly_aux(data_ori, columns_sel, year):
     output_data = output_data[(output_data["month_aux"]<=output_data['month_aux'].iloc[-1])]
     output_data["Any"] = output_data["Fecha"].dt.year
     output_data = output_data.drop_duplicates(["Fecha"] + columns_sel)
-    output_data = output_data.groupby("Any").sum().pct_change().mul(100).reset_index()
+    output_data = output_data.set_index("Fecha").groupby("Any").sum().pct_change().mul(100).reset_index()
     output_data = output_data[output_data["Any"]==int(year)].set_index("Any")
     return(output_data.values[0][0])
 
@@ -1109,20 +1109,20 @@ def tidy_present_monthly_diff(data_ori, columns_sel, year):
     output_data = output_data[(output_data["month_aux"]<=output_data['month_aux'].iloc[-1])]
     output_data["Any"] = output_data["Fecha"].dt.year
     output_data = output_data.drop_duplicates(["Fecha"] + columns_sel)
-    output_data = output_data.groupby("Any").mean().diff().mul(100).reset_index()
+    output_data = output_data.set_index("Fecha").groupby("Any").mean().diff().mul(100).reset_index()
     output_data = output_data[output_data["Any"]==int(year)].set_index("Any")
     return(output_data.values[0][0])
 
 ##@st.cache_data(show_spinner="**Carregant les dades... Esperi, siusplau**", max_entries=500)
 @st.cache_resource
 def indicator_year(df, df_aux, year, variable, tipus, frequency=None):
-    if (year==str(datetime.now().year-1) and (frequency=="month") and ((tipus=="var") or (tipus=="diff"))):
+    if (year==str(datetime.now().year) and (frequency=="month") and ((tipus=="var") or (tipus=="diff"))):
         return(round(tidy_present_monthly(df_aux, variable, year),2))
-    if (year==str(datetime.now().year-1) and (frequency=="month_aux") and (tipus=="var")):
+    if (year==str(datetime.now().year) and (frequency=="month_aux") and (tipus=="var")):
         return(round(tidy_present_monthly_aux(df_aux, variable, year),2))
-    if (year==str(datetime.now().year-1) and (frequency=="month_aux") and ((tipus=="diff"))):
+    if (year==str(datetime.now().year) and (frequency=="month_aux") and ((tipus=="diff"))):
         return(round(tidy_present_monthly_diff(df_aux, variable, year),2))
-    if (year==str(datetime.now().year-1) and ((tipus=="var") or (tipus=="diff"))):
+    if (year==str(datetime.now().year) and ((tipus=="var") or (tipus=="diff"))):
         return(round(tidy_present(df_aux.reset_index(), variable, year),2))
     if tipus=="level":
         df = df[df.index==year][variable]
@@ -1135,7 +1135,6 @@ def indicator_year(df, df_aux, year, variable, tipus, frequency=None):
         df = df[variable].diff().mul(100)
         df = df[df.index==year]
         return(round(df.values[0],2))
-
 ##@st.cache_data(show_spinner="**Carregant les dades... Esperi, siusplau**", max_entries=500)
 @st.cache_resource
 def concatenate_lists(list1, list2):
@@ -1160,7 +1159,7 @@ def filedownload(df, filename):
 def line_plotly(table_n, selection_n, title_main, title_y, title_x="Trimestre", replace_0=False):
     plot_cat = table_n[selection_n]
     if replace_0==True:
-        plot_cat = plot_cat.replace(0, np.NaN)
+        plot_cat = plot_cat.replace(0, np.nan)
     colors = ["#6495ED", "#7DF9FF",  "#87CEEB", "#A7C7E7"]
     traces = []
     for i, col in enumerate(plot_cat.columns):
@@ -1309,7 +1308,7 @@ def table_trim(data_ori, year_ini, rounded=False, formated=True):
     data_ori["Trimestre"] = data_ori["Trimestre"].str.split("T").str[1]
     data_ori["Trimestre"] = data_ori["Trimestre"] + "T"
     data_ori = data_ori[data_ori["Any"]>=str(year_ini)]
-    data_ori = data_ori.replace(0, np.NaN).rename(columns={"Any":"Año"})
+    data_ori = data_ori.replace(0, np.nan).rename(columns={"Any":"Año"})
     if rounded==True:
         numeric_columns = data_ori.select_dtypes(include=['float64', 'int64']).columns
         data_ori[numeric_columns] = data_ori[numeric_columns].applymap(lambda x: round(x, 1))
@@ -1347,9 +1346,9 @@ existing_data = pd.read_excel("Propuestas promo.xlsx", sheet_name="Edificabilida
 mun_solar = existing_data[existing_data["Nombre"]=="mun_solar"]["Valor"].values[0]
 
 #Defining years
-max_year= 2024
+max_year= 2025
 available_years = list(range(2018,max_year))
-index_year = 2023
+index_year = 2024
 
 ############################################################# PESTAÑA ANALISIS DE MERCADO ########################################################
 
@@ -1374,12 +1373,8 @@ if selected=="Análisis de mercado":
         if selected_option=="Distritos de Barcelona":
             selected_dis = st.selectbox("**Selecciona un distrito de Barcelona:**", maestro_dis["Districte"].unique())
     with right:
-        max_year= 2024
-        available_years = list(range(2018,max_year))
-        index_year = 2023
-        available_years = list(range(2018, datetime.now().year))
         if selected_index!="Definición de producto":
-            selected_year_n = st.selectbox("**Selecciona un año:**", available_years, available_years.index(2023))
+            selected_year_n = st.selectbox("**Selecciona un año:**", available_years, available_years.index(2024))
     if selected_option=="Provincias":
         if selected_index=="Producción":
                 min_year=2008
@@ -1631,7 +1626,7 @@ if selected=="Análisis de mercado":
             st.subheader(f"PRECIOS POR M\u00b2 CONSTRUIDO EN {selected_mun.upper()}")
             st.markdown(f'<div class="custom-box">AÑO {selected_year_n}</div>', unsafe_allow_html=True)   
             table_mun = tidy_Catalunya(DT_mun, ["Fecha"] + concatenate_lists(["prvivt_", "prvivs_", "prvivn_"], selected_mun), f"{str(min_year)}-01-01", f"{str(max_year+1)}-01-01",["Data", "Precio de la vivienda total", "Precio de la vivienda de segunda mano", "Precio de la vivienda nueva"])
-            table_mun = table_mun.replace(0, np.NaN)
+            table_mun = table_mun.replace(0, np.nan)
             table_mun_y = table_mun.reset_index().copy()
             table_mun_y["Any"] = table_mun_y["Trimestre"].str[:4]
             table_mun_y = table_mun_y.drop("Trimestre", axis=1)
@@ -1826,32 +1821,32 @@ if selected=="Análisis de mercado":
                 try:
                     st.metric(label="**Viviendas iniciadas**", value=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas iniciadas", "level"):,.0f}""", delta=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas iniciadas", "var")}%""")
                 except IndexError:
-                    st.metric(label="**Viviendas iniciadas**", value=0, delta="-100%")
+                    st.metric(label="**Viviendas iniciadas**", value="0")
             with center:
                 try:
                     st.metric(label="**Viviendas iniciadas plurifamiliares**", value=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas iniciadas plurifamiliares", "level"):,.0f}""", delta=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas iniciadas plurifamiliares", "var")}%""")
                 except IndexError:
-                    st.metric(label="**Viviendas iniciadas plurifamiliares**", value=0, delta="N/A")
+                    st.metric(label="**Viviendas iniciadas plurifamiliares**", value="Pendiente")
             with right:
                 try:
                     st.metric(label="**Viviendas iniciadas unifamiliares**", value=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas iniciadas unifamiliares", "level"):,.0f}""", delta=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas iniciadas unifamiliares", "var")}%""")
                 except IndexError:
-                    st.metric(label="**Viviendas iniciadas plurifamiliares**", value=0, delta="N/A")
+                    st.metric(label="**Viviendas iniciadas plurifamiliares**", value="Pendiente")
             with left:
                 try:
                     st.metric(label="**Viviendas acabadas**", value=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas acabadas", "level"):,.0f}""", delta=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas acabadas", "var")}%""")
                 except IndexError:
-                    st.metric(label="**Viviendas acabadas**", value=0, delta="-100%")
+                    st.metric(label="**Viviendas acabadas**", value="0")
             with center:
                 try:
                     st.metric(label="**Viviendas acabadas plurifamiliares**", value=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas acabadas plurifamiliares", "level"):,.0f}""", delta=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas acabadas plurifamiliares", "var")}%""")
                 except IndexError:
-                    st.metric(label="**Viviendas acabadas plurifamiliares**", value=0, delta="N/A")           
+                    st.metric(label="**Viviendas acabadas plurifamiliares**", value="Pendiente")           
             with right:
                 try:
                     st.metric(label="**Viviendas acabadas unifamiliares**", value=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas acabadas unifamiliares", "level"):,.0f}""", delta=f"""{indicator_year(table_dis_y, table_dis, str(selected_year_n), "Viviendas acabadas unifamiliares", "var")}%""")
                 except IndexError:
-                    st.metric(label="**Viviendas acabadas unifamiliares**", value=0, delta="N/A")
+                    st.metric(label="**Viviendas acabadas unifamiliares**", value="Pendiente")
             selected_columns_ini = [col for col in table_dis.columns.tolist() if col.startswith("Viviendas iniciadas ")]
             selected_columns_fin = [col for col in table_dis.columns.tolist() if col.startswith("Viviendas acabadas ")]
             selected_columns_aux = ["Viviendas iniciadas", "Viviendas acabadas"]
